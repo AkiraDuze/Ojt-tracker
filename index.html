@@ -22,7 +22,7 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-    html, body { height: 100%; background-color: var(--bg); color: var(--text); }
+    html, body { height: 100%; background-color: var(--bg); color: var(--text); overflow: hidden; }
     body { display: flex; justify-content: center; padding: 12px; }
     
     .container { 
@@ -59,7 +59,7 @@
     .tab-btn.active { background: var(--accent); color: #11111B; }
 
     /* Tab Content Areas */
-    .tab-content { display: none; flex: 1; flex-direction: column; overflow-y: auto; }
+    .tab-content { display: none; flex: 1; flex-direction: column; overflow-y: auto; gap: 8px; }
     .tab-content.active { display: flex; }
 
     /* Cards */
@@ -68,17 +68,18 @@
       border: 1px solid var(--border); 
       border-radius: 12px; 
       padding: 12px; 
-      margin-bottom: 8px; 
       text-align: center; 
     }
     .card-alt { background: var(--card-alt); }
+    .card-flex { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    
     .title { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; }
     .big-num { font-size: 1.6rem; font-weight: 700; color: var(--accent); margin: 4px 0; }
-    .eta-text { font-size: 0.8rem; font-weight: 700; color: var(--mint); margin-top: 2px; }
+    .eta-text { font-size: 0.85rem; font-weight: 700; color: var(--mint); margin-top: 2px; }
 
     /* Dual Cards Row */
-    .dual-card-row { display: flex; gap: 8px; margin-bottom: 8px; }
-    .dual-card-row .card { flex: 1; margin-bottom: 0; padding: 10px 8px; }
+    .dual-card-row { display: flex; gap: 8px; }
+    .dual-card-row .card { flex: 1; padding: 10px 8px; }
 
     /* Progress Bar */
     .progress-bar { background: var(--card-alt); height: 8px; border-radius: 4px; overflow: hidden; margin: 6px 0; }
@@ -86,7 +87,7 @@
     .progress-sub { font-size: 0.7rem; color: var(--text); }
 
     /* Buttons & Controls */
-    .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 6px 0 10px 0; }
+    .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     .btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 8px; font-size: 0.72rem; font-weight: 700; border-radius: 8px; cursor: pointer; }
     .btn-primary { background: var(--accent); color: #11111B; border: none; width: 100%; padding: 10px; margin-top: 8px; font-size: 0.8rem; font-weight: 700; border-radius: 8px; }
     .btn-danger { background: var(--red); color: #11111B; border: none; width: 100%; padding: 8px; font-size: 0.75rem; font-weight: 700; border-radius: 8px; margin-top: auto; }
@@ -100,7 +101,7 @@
     input[type="color"] { height: 32px; padding: 2px; cursor: pointer; }
 
     /* Segmented Control Filter */
-    .filter-bar { display: flex; gap: 4px; background: var(--card-alt); padding: 3px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
+    .filter-bar { display: flex; gap: 4px; background: var(--card-alt); padding: 3px; border-radius: 8px; border: 1px solid var(--border); }
     .filter-btn { flex: 1; background: transparent; border: none; color: var(--text-muted); padding: 5px; font-size: 0.65rem; font-weight: 700; border-radius: 6px; cursor: pointer; }
     .filter-btn.active { background: var(--accent); color: #11111B; }
 
@@ -114,15 +115,15 @@
     .cal-day-name { font-weight: 700; color: var(--text-muted); padding-bottom: 4px; }
     .cal-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: var(--card-alt); border-radius: 6px; font-size: 0.75rem; font-weight: 700; }
 
-    /* Log History */
-    .history-card { flex: 1; display: flex; flex-direction: column; overflow: hidden; margin-bottom: 8px; }
+    /* Log History Fill Remaining Height */
+    .history-card { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
     .log-list { flex: 1; overflow-y: auto; text-align: left; font-family: monospace; font-size: 0.72rem; }
     .log-item { padding: 8px 6px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; cursor: pointer; }
     .log-item.selected { background: var(--card-alt); border-radius: 6px; border: 1px solid var(--accent); }
     .badge { font-size: 0.6rem; padding: 2px 5px; border-radius: 4px; font-weight: bold; margin-left: 4px; }
 
     /* Clean Settings Layout */
-    .settings-card { text-align: left; padding: 12px; margin-bottom: 10px; }
+    .settings-card { text-align: left; padding: 12px; }
     .settings-card h4 { font-size: 0.75rem; color: var(--accent); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
     .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
     .toggle-row label { font-size: 0.75rem; font-weight: 700; }
@@ -174,31 +175,38 @@
       <div class="title">✨ ESTIMATED COMPLETION</div>
       <div class="eta-text" id="eta-text">Calculating...</div>
     </div>
+
+    <!-- Fill Bottom Empty Space: Recent Activity Widget -->
+    <div class="card card-flex" style="text-align: left; margin-bottom: 0;">
+      <div class="title" style="margin-bottom: 6px;">📋 RECENT LOG ACTIVITY</div>
+      <div id="recent-logs-preview" class="log-list" style="max-height: 140px;"></div>
+    </div>
   </div>
 
   <!-- LOG TIME TAB -->
   <div id="tab-log" class="tab-content">
-    <div class="title" style="margin-bottom: 4px;">QUICK PRESETS</div>
+    <div class="title">QUICK PRESETS</div>
     <div class="preset-grid" id="preset-buttons-container"></div>
-    <div class="card">
-      <div class="input-row" style="margin-bottom: 8px;">
-        <div class="input-group" style="flex:2;">
-          <label>Log Date</label>
-          <input type="date" id="inp-date">
+    <div class="card card-flex">
+      <div>
+        <div class="input-row" style="margin-bottom: 8px;">
+          <div class="input-group" style="flex:2;">
+            <label>Log Date</label>
+            <input type="date" id="inp-date">
+          </div>
+          <div class="input-group" id="group-category" style="flex:2; display: none;">
+            <label>Target OJT</label>
+            <select id="inp-category">
+              <option value="p1">Primary OJT</option>
+              <option value="p2">Secondary OJT</option>
+            </select>
+          </div>
         </div>
-        <!-- Category Selector (Visible only when Multi-OJT mode is ON) -->
-        <div class="input-group" id="group-category" style="flex:2; display: none;">
-          <label>Target OJT</label>
-          <select id="inp-category">
-            <option value="p1">Primary OJT</option>
-            <option value="p2">Secondary OJT</option>
-          </select>
+        <div class="input-row">
+          <div class="input-group"><label>Hours</label><input type="number" id="inp-h" value="8"></div>
+          <div class="input-group"><label>Mins</label><input type="number" id="inp-m" value="0"></div>
+          <div class="input-group" style="flex:2;"><label>Note</label><input type="text" id="inp-note" value="Daily Shift"></div>
         </div>
-      </div>
-      <div class="input-row">
-        <div class="input-group"><label>Hours</label><input type="number" id="inp-h" value="8"></div>
-        <div class="input-group"><label>Mins</label><input type="number" id="inp-m" value="0"></div>
-        <div class="input-group" style="flex:2;"><label>Note</label><input type="text" id="inp-note" value="Daily Shift"></div>
       </div>
       <button class="btn btn-primary" onclick="addLog()">+ Log Worked Hours</button>
     </div>
@@ -206,28 +214,29 @@
 
   <!-- CALENDAR TAB -->
   <div id="tab-calendar" class="tab-content">
-    <div class="card">
-      <div class="cal-header">
-        <button class="btn" style="padding: 2px 8px;" onclick="changeMonth(-1)">‹</button>
-        <div class="title" id="cal-month-title" style="font-size: 0.8rem;">Month Year</div>
-        <button class="btn" style="padding: 2px 8px;" onclick="changeMonth(1)">›</button>
-      </div>
+    <div class="card card-flex">
+      <div>
+        <div class="cal-header">
+          <button class="btn" style="padding: 2px 8px;" onclick="changeMonth(-1)">‹</button>
+          <div class="title" id="cal-month-title" style="font-size: 0.8rem;">Month Year</div>
+          <button class="btn" style="padding: 2px 8px;" onclick="changeMonth(1)">›</button>
+        </div>
 
-      <!-- Legend -->
-      <div class="cal-legend">
-        <div class="leg-item"><div class="dot" id="leg-dot-full"></div><span style="color:var(--text);">Full</span></div>
-        <div class="leg-item"><div class="dot" id="leg-dot-half"></div><span style="color:var(--text);">Half</span></div>
-        <div class="leg-item"><div class="dot" id="leg-dot-late"></div><span style="color:var(--text);">Late</span></div>
-        <div class="leg-item"><div class="dot" id="leg-dot-off"></div><span style="color:var(--text);">Off</span></div>
-      </div>
+        <!-- Legend -->
+        <div class="cal-legend">
+          <div class="leg-item"><div class="dot" id="leg-dot-full"></div><span style="color:var(--text);">Full</span></div>
+          <div class="leg-item"><div class="dot" id="leg-dot-half"></div><span style="color:var(--text);">Half</span></div>
+          <div class="leg-item"><div class="dot" id="leg-dot-late"></div><span style="color:var(--text);">Late</span></div>
+          <div class="leg-item"><div class="dot" id="leg-dot-off"></div><span style="color:var(--text);">Off</span></div>
+        </div>
 
-      <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
     </div>
   </div>
 
   <!-- HISTORY TAB -->
   <div id="tab-history" class="tab-content">
-    <!-- Filter bar (Visible only in Multi-OJT mode) -->
     <div class="filter-bar" id="history-filter-bar" style="display: none;">
       <button class="filter-btn active" id="f-all" onclick="filterHistory('all')">All</button>
       <button class="filter-btn" id="f-p1" onclick="filterHistory('p1')">OJT 1</button>
@@ -240,7 +249,7 @@
     <button class="btn btn-danger" onclick="deleteSelectedLog()">Delete Selected Entry</button>
   </div>
 
-  <!-- SETTINGS TAB (Cleaned & Reorganized) -->
+  <!-- SETTINGS TAB -->
   <div id="tab-settings" class="tab-content">
     
     <!-- Section 1: Mode Toggle -->
@@ -271,7 +280,7 @@
       </div>
     </div>
 
-    <!-- Section 3: Labels (Multi-mode only) -->
+    <!-- Section 3: Labels -->
     <div class="card settings-card" id="card-labels-settings" style="display:none;">
       <h4>🏷️ Custom Labels</h4>
       <div class="input-row">
@@ -308,7 +317,6 @@
 </div>
 
 <script>
-  // Default Application Configurations
   const DEFAULT_SETTINGS = {
     multiMode: false,
     targetP1: 480,
@@ -409,17 +417,14 @@
   function updateUI() {
     const isMulti = settings.multiMode;
     
-    // Toggle UI Visibility based on Multi-Mode
     document.getElementById('dual-tracker-row').style.display = isMulti ? 'flex' : 'none';
     document.getElementById('group-category').style.display = isMulti ? 'block' : 'none';
     document.getElementById('history-filter-bar').style.display = isMulti ? 'flex' : 'none';
     
-    // Target Calculations
     const p1TargetMins = (settings.targetP1 || 360) * 60;
     const p2TargetMins = isMulti ? ((settings.targetP2 || 40) * 60) : 0;
     const totalTargetMins = isMulti ? (p1TargetMins + p2TargetMins) : p1TargetMins;
 
-    // Log Calculations
     let p1Mins = 0, p2Mins = 0;
     logs.forEach(l => {
       if (l.category === 'p2' && isMulti) p2Mins += l.mins;
@@ -429,13 +434,11 @@
     const totalLoggedMins = p1Mins + p2Mins;
     const remTotalMins = Math.max(0, totalTargetMins - totalLoggedMins);
 
-    // Primary Summary Card
     document.getElementById('rem-hours').innerText = `${Math.floor(remTotalMins/60)}h ${remTotalMins%60}m`;
     const totalPct = Math.min(100, (totalLoggedMins / totalTargetMins) * 100);
     document.getElementById('progress-fill').style.width = `${totalPct}%`;
     document.getElementById('progress-text').innerText = `${Math.floor(totalLoggedMins/60)}h ${totalLoggedMins%60}m completed (${totalPct.toFixed(1)}%)`;
 
-    // Multi-OJT Breakdown Cards
     if (isMulti) {
       document.getElementById('label-ojt1-title').innerText = `${settings.nameP1 || 'OJT 1'} (${settings.targetP1}h)`;
       document.getElementById('label-ojt2-title').innerText = `${settings.nameP2 || 'OJT 2'} (${settings.targetP2}h)`;
@@ -449,7 +452,6 @@
       document.getElementById('sub-ojt1').innerText = `${((p1Mins/p1TargetMins)*100).toFixed(0)}% done`;
       document.getElementById('sub-ojt2').innerText = `${((p2Mins/p2TargetMins)*100).toFixed(0)}% done`;
 
-      // Update Option dropdown labels
       const sel = document.getElementById('inp-category');
       sel.options[0].text = settings.nameP1 || 'Primary OJT';
       sel.options[1].text = settings.nameP2 || 'Secondary OJT';
@@ -458,7 +460,7 @@
       document.getElementById('f-p2').innerText = settings.nameP2 || 'OJT 2';
     }
 
-    // Render History List
+    // Render Full History List
     const listEl = document.getElementById('log-list');
     const filteredLogs = logs.filter(l => {
       if (!isMulti || activeHistoryFilter === 'all') return true;
@@ -477,10 +479,20 @@
       `;
     }).join('');
 
-    // ETA Calc
-    document.getElementById('eta-text').innerText = remTotalMins <= 0 ? "🎉 Completed!" : getETA(remTotalMins);
+    // Render Tracker Preview Widget
+    const previewEl = document.getElementById('recent-logs-preview');
+    if (previewEl) {
+      previewEl.innerHTML = logs.slice(-4).reverse().map(l => `
+        <div class="log-item" style="padding: 6px 0;">
+          <span>+${Math.floor(l.mins/60)}h${l.mins%60}m | ${l.desc}</span>
+          <span style="color:var(--text-muted)">${l.date.split(' - ')[0]}</span>
+        </div>
+      `).join('') || '<div style="color:var(--text-muted); font-size:0.7rem;">No time logged yet.</div>';
+    }
+
+    // Exact Time Calculation for Completion ETA
+    document.getElementById('eta-text').innerText = remTotalMins <= 0 ? "🎉 Completed!" : calculateDetailedETA(remTotalMins);
     
-    // Legend colors
     document.getElementById('leg-dot-full').style.background = settings.colors.full;
     document.getElementById('leg-dot-half').style.background = settings.colors.half;
     document.getElementById('leg-dot-late').style.background = settings.colors.late;
@@ -489,15 +501,63 @@
     renderPresets();
   }
 
-  function getETA(minsLeft) {
+  // Exact Time Schedule Completion Calculation Engine
+  function calculateDetailedETA(remainingMins) {
     let curr = new Date();
-    while (minsLeft > 0) {
-      if (curr.getDay() !== 0 && curr.getDay() !== 6) {
-        minsLeft -= 480;
-      }
-      if (minsLeft > 0) curr.setDate(curr.getDate() + 1);
+    
+    // If past 5:45 PM, start counting from next morning 8:45 AM
+    if (curr.getHours() > 17 || (curr.getHours() === 17 && curr.getMinutes() >= 45)) {
+      curr.setDate(curr.getDate() + 1);
+      curr.setHours(8, 45, 0, 0);
+    } else if (curr.getHours() < 8 || (curr.getHours() === 8 && curr.getMinutes() < 45)) {
+      curr.setHours(8, 45, 0, 0);
     }
-    return curr.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+
+    // Skip weekends
+    while (curr.getDay() === 0 || curr.getDay() === 6) {
+      curr.setDate(curr.getDate() + 1);
+      curr.setHours(8, 45, 0, 0);
+    }
+
+    let minsLeft = remainingMins;
+
+    while (minsLeft > 0) {
+      let lunchStart = new Date(curr); lunchStart.setHours(12, 0, 0, 0);
+      let lunchEnd = new Date(curr); lunchEnd.setHours(13, 0, 0, 0);
+      let shiftEnd = new Date(curr); shiftEnd.setHours(17, 45, 0, 0);
+
+      if (curr >= lunchStart && curr < lunchEnd) {
+        curr = new Date(lunchEnd);
+      }
+
+      let availableToday = 0;
+      if (curr < lunchStart) {
+        availableToday = Math.floor((lunchStart - curr) / 60000) + 285;
+      } else {
+        availableToday = Math.floor((shiftEnd - curr) / 60000);
+      }
+
+      if (minsLeft <= availableToday) {
+        let addMins = minsLeft;
+        let futureTime = new Date(curr.getTime() + addMins * 60000);
+        if (curr < lunchStart && futureTime >= lunchStart) {
+          addMins += 60;
+        }
+        curr = new Date(curr.getTime() + addMins * 60000);
+        minsLeft = 0;
+      } else {
+        minsLeft -= availableToday;
+        curr.setDate(curr.getDate() + 1);
+        curr.setHours(8, 45, 0, 0);
+        while (curr.getDay() === 0 || curr.getDay() === 6) {
+          curr.setDate(curr.getDate() + 1);
+        }
+      }
+    }
+
+    const dateFormatted = curr.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    const timeFormatted = curr.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    return `${dateFormatted} at ${timeFormatted}`;
   }
 
   function renderCalendar() {
@@ -542,7 +602,6 @@
       if (dayMap[day]) {
         const entries = dayMap[day];
         if (entries.length > 1 && settings.multiMode) {
-          // Dual Gradient background if both OJTs logged on same day
           customBg = `background: linear-gradient(135deg, ${entries[0].col} 50%, ${entries[1].col} 50%) !important; color:#11111B !important;`;
         } else {
           customBg = `background:${entries[0].col} !important; color:#11111B !important;`;
@@ -567,7 +626,6 @@
     }
   }
 
-  /* SETTINGS TAB FUNCTIONS */
   function toggleMultiModeUI() {
     const checked = document.getElementById('set-multi-mode').checked;
     document.getElementById('group-target-p2').style.display = checked ? 'block' : 'none';
