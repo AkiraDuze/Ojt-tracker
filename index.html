@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>OJT Notepad</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #181825;
+      --card: #1E1E2E;
+      --card-alt: #252536;
+      --text: #CDD6F4;
+      --text-muted: #A6ADC8;
+      --accent: #CBA6F7;
+      --mint: #A6E3A1;
+      --yellow: #F9E2AF;
+      --orange: #FAB387;
+      --red: #F38BA8;
+      --border: #313244;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 12px; }
+    .container { width: 100%; max-width: 340px; background: var(--bg); border-radius: 12px; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 4px; background: var(--card); padding: 4px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border); }
+    .tab-btn { flex: 1; background: transparent; border: none; color: var(--text-muted); padding: 6px; font-size: 0.75rem; font-weight: 700; border-radius: 6px; cursor: pointer; }
+    .tab-btn.active { background: var(--accent); color: #11111B; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Cards */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; text-align: center; }
+    .card-alt { background: var(--card-alt); }
+    .title { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; }
+    .big-num { font-size: 1.5rem; font-weight: 700; color: var(--accent); margin: 4px 0; }
+    .eta-text { font-size: 0.8rem; font-weight: 700; color: var(--mint); margin-top: 2px; }
+
+    /* Progress Bar */
+    .progress-bar { background: var(--card-alt); height: 8px; border-radius: 4px; overflow: hidden; margin: 6px 0; }
+    .progress-fill { background: var(--mint); height: 100%; width: 0%; transition: width 0.3s ease; }
+    .progress-sub { font-size: 0.7rem; color: var(--text); }
+
+    /* Grid Buttons */
+    .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0; }
+    .btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 8px; font-size: 0.7rem; font-weight: 700; border-radius: 6px; cursor: pointer; }
+    .btn-primary { background: var(--accent); color: #11111B; border: none; width: 100%; padding: 8px; margin-top: 8px; font-size: 0.8rem; font-weight: 700; border-radius: 6px; }
+    .btn-danger { background: var(--red); color: #11111B; border: none; width: 100%; padding: 6px; font-size: 0.75rem; font-weight: 700; border-radius: 6px; }
+
+    /* Custom Input */
+    .input-row { display: flex; gap: 6px; margin-top: 6px; }
+    .input-group { flex: 1; text-align: left; }
+    .input-group label { display: block; font-size: 0.6rem; color: var(--text-muted); margin-bottom: 2px; }
+    input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 6px; border-radius: 4px; font-size: 0.8rem; text-align: center; }
+    input[type="date"] { text-align: left; padding: 5px; font-size: 0.75rem; color-scheme: dark; }
+
+    /* Calendar Grid */
+    .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center; font-size: 0.7rem; }
+    .cal-day-name { font-weight: 700; color: var(--text-muted); padding-bottom: 4px; }
+    .cal-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: var(--card-alt); border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+    .status-full { background: var(--mint); color: #11111B; }
+    .status-half { background: var(--yellow); color: #11111B; }
+    .status-late { background: var(--orange); color: #11111B; }
+    .status-off { background: var(--red); color: #11111B; }
+
+    /* Log History */
+    .log-list { max-height: 200px; overflow-y: auto; text-align: left; font-family: monospace; font-size: 0.7rem; }
+    .log-item { padding: 6px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; cursor: pointer; }
+    .log-item.selected { background: var(--card-alt); border-radius: 4px; border: 1px solid var(--accent); }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('tracker')">Tracker</button>
+    <button class="tab-btn" onclick="switchTab('log')">Log Time</button>
+    <button class="tab-btn" onclick="switchTab('calendar')">Calendar</button>
+    <button class="tab-btn" onclick="switchTab('history')">History</button>
+  </div>
+
+  <!-- TRACKER TAB -->
+  <div id="tab-tracker" class="tab-content active">
+    <div class="card">
+      <div class="title">HOURS REMAINING</div>
+      <div class="big-num" id="rem-hours">480h 00m</div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-sub" id="progress-text">0h completed (0.0%)</div>
+    </div>
+    <div class="card card-alt">
+      <div class="title">✨ ESTIMATED COMPLETION</div>
+      <div class="eta-text" id="eta-text">Calculating...</div>
+    </div>
+  </div>
+
+  <!-- LOG TIME TAB -->
+  <div id="tab-log" class="tab-content">
+    <div class="title" style="margin-bottom: 4px;">QUICK PRESETS</div>
+    <div class="preset-grid">
+      <button class="btn" onclick="setPreset(8, 0, 'Daily Shift')">Full Day (8h)</button>
+      <button class="btn" onclick="setPreset(4, 0, 'Half Day Morning')">Morning (4h)</button>
+      <button class="btn" onclick="setPreset(4, 0, 'Half Day Afternoon')">Afternoon (4h)</button>
+      <button class="btn" onclick="setPreset(7, 45, 'Late 15m')">15m Late (7h 45m)</button>
+    </div>
+    <div class="card">
+      <div class="input-group" style="margin-bottom: 6px;">
+        <label>Log Date (Choose past date if needed)</label>
+        <input type="date" id="inp-date">
+      </div>
+      <div class="input-row">
+        <div class="input-group"><label>Hours</label><input type="number" id="inp-h" value="8"></div>
+        <div class="input-group"><label>Mins</label><input type="number" id="inp-m" value="0"></div>
+        <div class="input-group" style="flex:2;"><label>Note</label><input type="text" id="inp-note" value="Daily Shift"></div>
+      </div>
+      <button class="btn btn-primary" onclick="addLog()">+ Log Worked Hours</button>
+    </div>
+  </div>
+
+  <!-- CALENDAR TAB -->
+  <div id="tab-calendar" class="tab-content">
+    <div class="card">
+      <div class="cal-header">
+        <button class="btn" style="padding: 2px 8px;" onclick="changeMonth(-1)">‹</button>
+        <div class="title" id="cal-month-title" style="font-size: 0.8rem;">Month Year</div>
+        <button class="btn" style="padding: 2px 8px;" onclick="changeMonth(1)">›</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div id="tab-history" class="tab-content">
+    <div class="card">
+      <div class="log-list" id="log-list"></div>
+    </div>
+    <button class="btn btn-danger" onclick="deleteSelectedLog()">Delete Selected Entry</button>
+  </div>
+</div>
+
+<script>
+  const TARGET_MINS = 480 * 60;
+  let logs = JSON.parse(localStorage.getItem('ojt_logs') || '[]');
+  let selectedLogIdx = null;
+  let currYear = new Date().getFullYear();
+  let currMonth = new Date().getMonth();
+
+  // Set default date picker to today
+  document.getElementById('inp-date').valueAsDate = new Date();
+
+  function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', ['tracker','log','calendar','history'][i] === name));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById(`tab-${name}`).classList.add('active');
+    if (name === 'calendar') renderCalendar();
+  }
+
+  function setPreset(h, m, note) {
+    document.getElementById('inp-h').value = h;
+    document.getElementById('inp-m').value = m;
+    document.getElementById('inp-note').value = note;
+  }
+
+  function addLog() {
+    const h = parseInt(document.getElementById('inp-h').value) || 0;
+    const m = parseInt(document.getElementById('inp-m').value) || 0;
+    const note = document.getElementById('inp-note').value.trim() || 'Daily Shift';
+    
+    // Parse chosen date
+    const dateVal = document.getElementById('inp-date').value;
+    let chosenDate = new Date();
+    if (dateVal) {
+      const parts = dateVal.split('-');
+      chosenDate = new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+
+    const dateStr = chosenDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    logs.push({ 
+      mins: (h * 60) + m, 
+      desc: note, 
+      date: `${dateStr} - ${timeStr}`,
+      rawDate: chosenDate.toISOString()
+    });
+    
+    saveData();
+    switchTab('tracker');
+  }
+
+  function saveData() {
+    localStorage.setItem('ojt_logs', JSON.stringify(logs));
+    updateUI();
+  }
+
+  function updateUI() {
+    const totalMins = logs.reduce((a, b) => a + b.mins, 0);
+    const remMins = Math.max(0, TARGET_MINS - totalMins);
+    
+    document.getElementById('rem-hours').innerText = `${Math.floor(remMins/60)}h ${remMins%60}m`;
+    const pct = Math.min(100, (totalMins / TARGET_MINS) * 100);
+    document.getElementById('progress-fill').style.width = `${pct}%`;
+    document.getElementById('progress-text').innerText = `${Math.floor(totalMins/60)}h ${totalMins%60}m completed (${pct.toFixed(1)}%)`;
+
+    // Render History
+    const listEl = document.getElementById('log-list');
+    listEl.innerHTML = logs.map((l, i) => `
+      <div class="log-item ${selectedLogIdx === i ? 'selected' : ''}" onclick="selectedLogIdx=${i}; updateUI();">
+        <span>+${Math.floor(l.mins/60)}h${l.mins%60}m | ${l.desc}</span>
+        <span style="color:var(--text-muted)">${l.date.split(' - ')[0]}</span>
+      </div>
+    `).join('');
+
+    // ETA Calc
+    document.getElementById('eta-text').innerText = remMins <= 0 ? "🎉 Completed!" : getETA(remMins);
+  }
+
+  function getETA(minsLeft) {
+    let curr = new Date();
+    while (minsLeft > 0) {
+      if (curr.getDay() !== 0 && curr.getDay() !== 6) {
+        minsLeft -= 480;
+      }
+      if (minsLeft > 0) curr.setDate(curr.getDate() + 1);
+    }
+    return curr.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function renderCalendar() {
+    const title = document.getElementById('cal-month-title');
+    const grid = document.getElementById('cal-grid');
+    const d = new Date(currYear, currMonth, 1);
+    title.innerText = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+    grid.innerHTML = ['M','T','W','T','F','S','S'].map(n => `<div class="cal-day-name">${n}</div>`).join('');
+    
+    let firstDay = (d.getDay() + 6) % 7;
+    let daysInMonth = new Date(currYear, currMonth + 1, 0).getDate();
+
+    // Map logs to days
+    const dayMap = {};
+    logs.forEach(l => {
+      const dt = l.rawDate ? new Date(l.rawDate) : new Date(l.date.split(' - ')[0]);
+      if (dt.getFullYear() === currYear && dt.getMonth() === currMonth) {
+        dayMap[dt.getDate()] = (dayMap[dt.getDate()] || 0) + l.mins;
+      }
+    });
+
+    for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
+    for (let day = 1; day <= daysInMonth; day++) {
+      let statusClass = '';
+      if (dayMap[day]) {
+        const mins = dayMap[day];
+        if (mins >= 480) statusClass = 'status-full';
+        else if (mins <= 300) statusClass = 'status-half';
+        else statusClass = 'status-late';
+      }
+      grid.innerHTML += `<div class="cal-cell ${statusClass}">${day}</div>`;
+    }
+  }
+
+  function changeMonth(delta) {
+    currMonth += delta;
+    if (currMonth > 11) { currMonth = 0; currYear++; }
+    if (currMonth < 0) { currMonth = 11; currYear--; }
+    renderCalendar();
+  }
+
+  function deleteSelectedLog() {
+    if (selectedLogIdx !== null) {
+      logs.splice(selectedLogIdx, 1);
+      selectedLogIdx = null;
+      saveData();
+    }
+  }
+
+  updateUI();
+</script>
+</body>
+</html>
+
