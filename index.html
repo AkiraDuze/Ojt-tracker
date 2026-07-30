@@ -102,7 +102,7 @@
     input, select, textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 10px; font-size: 0.85rem; }
     input[type="date"] { text-align: left; color-scheme: dark; }
     input[type="color"] { height: 38px; padding: 2px; cursor: pointer; }
-    textarea { resize: none; line-height: 1.5; font-size: 0.88rem; }
+    textarea { resize: none; line-height: 1.5; font-size: 0.85rem; }
 
     /* Segmented Filters */
     .filter-bar { display: flex; gap: 4px; background: var(--card-alt); padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
@@ -134,9 +134,13 @@
       transition: border-color 0.2s ease;
     }
     .log-item.selected { border-color: var(--accent); background: #28283d; }
-    .log-info-main { font-weight: 700; font-size: 0.82rem; }
+    .log-info-main { font-weight: 700; font-size: 0.82rem; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
     .log-info-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 3px; }
-    .badge { font-size: 0.62rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 6px; }
+    
+    /* Badges */
+    .badge { font-size: 0.62rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+    .badge-draft { background: var(--yellow); color: #11111b; }
+    .badge-saved { background: var(--mint); color: #11111b; }
 
     /* Settings Sections */
     .settings-card { text-align: left; padding: 16px; }
@@ -241,10 +245,14 @@
             </select>
           </div>
         </div>
-        <div class="input-row">
+        <div class="input-row" style="margin-bottom: 10px;">
           <div class="input-group"><label>Hours</label><input type="number" id="inp-h" value="8"></div>
           <div class="input-group"><label>Mins</label><input type="number" id="inp-m" value="0"></div>
           <div class="input-group" style="flex:2;"><label>Summary Note</label><input type="text" id="inp-note" value="Daily Shift"></div>
+        </div>
+        <div class="input-group">
+          <label>Optional Diary / Task Notes</label>
+          <textarea id="inp-diary-direct" style="height: 65px;" placeholder="Write any tasks, achievements, or draft report notes for today..."></textarea>
         </div>
       </div>
       <button class="btn btn-primary" onclick="addLog()">+ Log Worked Hours</button>
@@ -441,6 +449,7 @@
     const h = parseInt(document.getElementById('inp-h').value) || 0;
     const m = parseInt(document.getElementById('inp-m').value) || 0;
     const note = document.getElementById('inp-note').value.trim() || 'Daily Shift';
+    const directDiary = document.getElementById('inp-diary-direct').value.trim();
     const cat = settings.multiMode ? document.getElementById('inp-category').value : 'p1';
     
     const dateVal = document.getElementById('inp-date').value;
@@ -459,10 +468,11 @@
       category: cat,
       date: dateStr,
       exactTime: timeStr,
-      diary: '',
+      diary: directDiary,
       rawDate: chosenDate.toISOString()
     });
     
+    document.getElementById('inp-diary-direct').value = '';
     saveData();
     switchTab('tracker');
   }
@@ -527,7 +537,7 @@
       document.getElementById('f-p2').innerText = settings.nameP2 || 'OJT 2';
     }
 
-    // Render History Entries
+    // Render History Entries with Visual Indicators
     const listEl = document.getElementById('log-list');
     const filteredLogs = logs.filter(l => {
       if (!isMulti || activeHistoryFilter === 'all') return true;
@@ -539,7 +549,15 @@
     listEl.innerHTML = filteredLogs.map((l) => {
       const realIndex = logs.indexOf(l);
       const catBadge = isMulti ? `<span class="badge" style="background:${l.category === 'p2' ? 'var(--blue)' : 'var(--mint)'}; color:#11111B;">${l.category === 'p2' ? (settings.nameP2||'OJT 2') : (settings.nameP1||'OJT 1')}</span>` : '';
-      const hasDiaryIcon = (l.diary || l.diaryDraft) ? ' 📖' : '';
+      
+      // Diary Status Badge
+      let diaryBadge = '';
+      if (l.diaryDraft && l.diaryDraft.trim() !== '') {
+        diaryBadge = `<span class="badge badge-draft">📝 Draft</span>`;
+      } else if (l.diary && l.diary.trim() !== '') {
+        diaryBadge = `<span class="badge badge-saved">📖 Logged</span>`;
+      }
+
       const displayTime = l.exactTime || (l.date.includes(' - ') ? l.date.split(' - ')[1] : '');
 
       return `
@@ -547,7 +565,7 @@
              onclick="selectedLogIdx=${realIndex}; updateUI();" 
              ondblclick="openDiaryModal(${realIndex})">
           <div>
-            <div class="log-info-main">+${Math.floor(l.mins/60)}h${l.mins%60}m | ${l.desc}${hasDiaryIcon}${catBadge}</div>
+            <div class="log-info-main">+${Math.floor(l.mins/60)}h${l.mins%60}m | ${l.desc} ${diaryBadge} ${catBadge}</div>
             <div class="log-info-sub">${l.date.split(' - ')[0]} ${displayTime ? '• ' + displayTime : ''}</div>
           </div>
         </div>
