@@ -59,13 +59,19 @@
 
     /* Calendar Grid */
     .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .cal-legend { display: flex; justify-content: center; gap: 8px; margin-bottom: 8px; font-size: 0.65rem; font-weight: 700; }
+    .leg-item { display: flex; align-items: center; gap: 3px; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; }
+
     .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center; font-size: 0.7rem; }
     .cal-day-name { font-weight: 700; color: var(--text-muted); padding-bottom: 4px; }
     .cal-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: var(--card-alt); border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
-    .status-full { background: var(--mint); color: #11111B; }
-    .status-half { background: var(--yellow); color: #11111B; }
-    .status-late { background: var(--orange); color: #11111B; }
-    .status-off { background: var(--red); color: #11111B; }
+    
+    /* Calendar Colors */
+    .status-full { background: var(--mint) !important; color: #11111B !important; }
+    .status-half { background: var(--yellow) !important; color: #11111B !important; }
+    .status-late { background: var(--orange) !important; color: #11111B !important; }
+    .status-off { background: var(--red) !important; color: #11111B !important; }
 
     /* Log History */
     .log-list { max-height: 200px; overflow-y: auto; text-align: left; font-family: monospace; font-size: 0.7rem; }
@@ -102,7 +108,197 @@
     <div class="title" style="margin-bottom: 4px;">QUICK PRESETS</div>
     <div class="preset-grid">
       <button class="btn" onclick="setPreset(8, 0, 'Daily Shift')">Full Day (8h)</button>
-      <button class="btn" onclick="setPreset(4, 0, 'Half Day Morning')">Morning (4h)</button>
+      <button class="btn" onclick="setPreset(4, 0, 'Half Day')">Half Day (4h)</button>
+      <button class="btn" onclick="setPreset(7, 45, 'Late 15m')">Late (7h 45m)</button>
+      <button class="btn" style="border-color: var(--red); color: var(--red);" onclick="setPreset(0, 0, 'Suspended/Absent')">Absent / Off (0h)</button>
+    </div>
+    <div class="card">
+      <div class="input-group" style="margin-bottom: 6px;">
+        <label>Log Date</label>
+        <input type="date" id="inp-date">
+      </div>
+      <div class="input-row">
+        <div class="input-group"><label>Hours</label><input type="number" id="inp-h" value="8"></div>
+        <div class="input-group"><label>Mins</label><input type="number" id="inp-m" value="0"></div>
+        <div class="input-group" style="flex:2;"><label>Note</label><input type="text" id="inp-note" value="Daily Shift"></div>
+      </div>
+      <button class="btn btn-primary" onclick="addLog()">+ Log Worked Hours</button>
+    </div>
+  </div>
+
+  <!-- CALENDAR TAB -->
+  <div id="tab-calendar" class="tab-content">
+    <div class="card">
+      <div class="cal-header">
+        <button class="btn" style="padding: 2px 8px;" onclick="changeMonth(-1)">‹</button>
+        <div class="title" id="cal-month-title" style="font-size: 0.8rem;">Month Year</div>
+        <button class="btn" style="padding: 2px 8px;" onclick="changeMonth(1)">›</button>
+      </div>
+
+      <!-- Legend -->
+      <div class="cal-legend">
+        <div class="leg-item"><div class="dot" style="background:var(--mint);"></div><span style="color:var(--mint);">Full</span></div>
+        <div class="leg-item"><div class="dot" style="background:var(--yellow);"></div><span style="color:var(--yellow);">Half</span></div>
+        <div class="leg-item"><div class="dot" style="background:var(--orange);"></div><span style="color:var(--orange);">Late</span></div>
+        <div class="leg-item"><div class="dot" style="background:var(--red);"></div><span style="color:var(--red);">Off</span></div>
+      </div>
+
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div id="tab-history" class="tab-content">
+    <div class="card">
+      <div class="log-list" id="log-list"></div>
+    </div>
+    <button class="btn btn-danger" onclick="deleteSelectedLog()">Delete Selected Entry</button>
+  </div>
+</div>
+
+<script>
+  const TARGET_MINS = 480 * 60;
+  let logs = JSON.parse(localStorage.getItem('ojt_logs') || '[]');
+  let selectedLogIdx = null;
+  let currYear = new Date().getFullYear();
+  let currMonth = new Date().getMonth();
+
+  document.getElementById('inp-date').valueAsDate = new Date();
+
+  function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', ['tracker','log','calendar','history'][i] === name));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById(`tab-${name}`).classList.add('active');
+    if (name === 'calendar') renderCalendar();
+  }
+
+  function setPreset(h, m, note) {
+    document.getElementById('inp-h').value = h;
+    document.getElementById('inp-m').value = m;
+    document.getElementById('inp-note').value = note;
+  }
+
+  function addLog() {
+    const h = parseInt(document.getElementById('inp-h').value) || 0;
+    const m = parseInt(document.getElementById('inp-m').value) || 0;
+    const note = document.getElementById('inp-note').value.trim() || 'Daily Shift';
+    
+    const dateVal = document.getElementById('inp-date').value;
+    let chosenDate = new Date();
+    if (dateVal) {
+      const parts = dateVal.split('-');
+      chosenDate = new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+
+    const dateStr = chosenDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    logs.push({ 
+      mins: (h * 60) + m, 
+      desc: note, 
+      date: `${dateStr} - ${timeStr}`,
+      rawDate: chosenDate.toISOString()
+    });
+    
+    saveData();
+    switchTab('tracker');
+  }
+
+  function saveData() {
+    localStorage.setItem('ojt_logs', JSON.stringify(logs));
+    updateUI();
+  }
+
+  function updateUI() {
+    const totalMins = logs.reduce((a, b) => a + b.mins, 0);
+    const remMins = Math.max(0, TARGET_MINS - totalMins);
+    
+    document.getElementById('rem-hours').innerText = `${Math.floor(remMins/60)}h ${remMins%60}m`;
+    const pct = Math.min(100, (totalMins / TARGET_MINS) * 100);
+    document.getElementById('progress-fill').style.width = `${pct}%`;
+    document.getElementById('progress-text').innerText = `${Math.floor(totalMins/60)}h ${totalMins%60}m completed (${pct.toFixed(1)}%)`;
+
+    // Render History
+    const listEl = document.getElementById('log-list');
+    listEl.innerHTML = logs.map((l, i) => `
+      <div class="log-item ${selectedLogIdx === i ? 'selected' : ''}" onclick="selectedLogIdx=${i}; updateUI();">
+        <span>+${Math.floor(l.mins/60)}h${l.mins%60}m | ${l.desc}</span>
+        <span style="color:var(--text-muted)">${l.date.split(' - ')[0]}</span>
+      </div>
+    `).join('');
+
+    // ETA Calc
+    document.getElementById('eta-text').innerText = remMins <= 0 ? "🎉 Completed!" : getETA(remMins);
+  }
+
+  function getETA(minsLeft) {
+    let curr = new Date();
+    while (minsLeft > 0) {
+      if (curr.getDay() !== 0 && curr.getDay() !== 6) {
+        minsLeft -= 480;
+      }
+      if (minsLeft > 0) curr.setDate(curr.getDate() + 1);
+    }
+    return curr.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function renderCalendar() {
+    const title = document.getElementById('cal-month-title');
+    const grid = document.getElementById('cal-grid');
+    const d = new Date(currYear, currMonth, 1);
+    title.innerText = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+    grid.innerHTML = ['M','T','W','T','F','S','S'].map(n => `<div class="cal-day-name">${n}</div>`).join('');
+    
+    let firstDay = (d.getDay() + 6) % 7;
+    let daysInMonth = new Date(currYear, currMonth + 1, 0).getDate();
+
+    // Auto-calculate status colors per day
+    const dayMap = {};
+    logs.forEach(l => {
+      const dt = l.rawDate ? new Date(l.rawDate) : new Date(l.date.split(' - ')[0]);
+      if (dt.getFullYear() === currYear && dt.getMonth() === currMonth) {
+        let st = 'full';
+        if (l.mins === 0 || l.desc.toLowerCase().includes('absent') || l.desc.toLowerCase().includes('suspended') || l.desc.toLowerCase().includes('off')) {
+          st = 'off';
+        } else if (l.mins <= 300) {
+          st = 'half';
+        } else if (l.mins < 480) {
+          st = 'late';
+        }
+        dayMap[dt.getDate()] = st;
+      }
+    });
+
+    for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
+    for (let day = 1; day <= daysInMonth; day++) {
+      let statusClass = '';
+      if (dayMap[day]) {
+        statusClass = `status-${dayMap[day]}`;
+      }
+      grid.innerHTML += `<div class="cal-cell ${statusClass}">${day}</div>`;
+    }
+  }
+
+  function changeMonth(delta) {
+    currMonth += delta;
+    if (currMonth > 11) { currMonth = 0; currYear++; }
+    if (currMonth < 0) { currMonth = 11; currYear--; }
+    renderCalendar();
+  }
+
+  function deleteSelectedLog() {
+    if (selectedLogIdx !== null) {
+      logs.splice(selectedLogIdx, 1);
+      selectedLogIdx = null;
+      saveData();
+    }
+  }
+
+  updateUI();
+</script>
+</body>
+</html>
       <button class="btn" onclick="setPreset(4, 0, 'Half Day Afternoon')">Afternoon (4h)</button>
       <button class="btn" onclick="setPreset(7, 45, 'Late 15m')">15m Late (7h 45m)</button>
     </div>
