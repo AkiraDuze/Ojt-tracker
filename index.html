@@ -110,7 +110,7 @@
       <button class="btn" onclick="setPreset(8, 0, 'Daily Shift')">Full Day (8h)</button>
       <button class="btn" onclick="setPreset(4, 0, 'Half Day')">Half Day (4h)</button>
       <button class="btn" onclick="setPreset(7, 45, 'Late 15m')">Late (7h 45m)</button>
-      <button class="btn" style="border-color: var(--red); color: var(--red);" onclick="setPreset(0, 0, 'Suspended/Absent')">Absent / Off (0h)</button>
+      <button class="btn" style="border-color: var(--red); color: var(--red);" onclick="setPreset(0, 0, 'Absent')">Absent / Off (0h)</button>
     </div>
     <div class="card">
       <div class="input-group" style="margin-bottom: 6px;">
@@ -253,13 +253,24 @@
     let firstDay = (d.getDay() + 6) % 7;
     let daysInMonth = new Date(currYear, currMonth + 1, 0).getDate();
 
-    // Auto-calculate status colors per day
+    // Flexible date parser for all log history
     const dayMap = {};
     logs.forEach(l => {
-      const dt = l.rawDate ? new Date(l.rawDate) : new Date(l.date.split(' - ')[0]);
-      if (dt.getFullYear() === currYear && dt.getMonth() === currMonth) {
+      let dt = l.rawDate ? new Date(l.rawDate) : new Date(l.date.split(' - ')[0]);
+      
+      // Fallback parser if date format string was logged differently
+      if (isNaN(dt.getTime())) {
+        const parts = l.date.split(' - ')[0].replace(',', '').split(' ');
+        if (parts.length >= 3) {
+          dt = new Date(`${parts[0]} ${parts[1]}, ${parts[2]}`);
+        }
+      }
+
+      if (!isNaN(dt.getTime()) && dt.getFullYear() === currYear && dt.getMonth() === currMonth) {
         let st = 'full';
-        if (l.mins === 0 || l.desc.toLowerCase().includes('absent') || l.desc.toLowerCase().includes('suspended') || l.desc.toLowerCase().includes('off')) {
+        const descLower = l.desc.toLowerCase();
+        
+        if (l.mins === 0 || descLower.includes('absent') || descLower.includes('suspended') || descLower.includes('off') || descLower.includes('leave')) {
           st = 'off';
         } else if (l.mins <= 300) {
           st = 'half';
@@ -299,182 +310,3 @@
 </script>
 </body>
 </html>
-      <button class="btn" onclick="setPreset(4, 0, 'Half Day Afternoon')">Afternoon (4h)</button>
-      <button class="btn" onclick="setPreset(7, 45, 'Late 15m')">15m Late (7h 45m)</button>
-    </div>
-    <div class="card">
-      <div class="input-group" style="margin-bottom: 6px;">
-        <label>Log Date (Choose past date if needed)</label>
-        <input type="date" id="inp-date">
-      </div>
-      <div class="input-row">
-        <div class="input-group"><label>Hours</label><input type="number" id="inp-h" value="8"></div>
-        <div class="input-group"><label>Mins</label><input type="number" id="inp-m" value="0"></div>
-        <div class="input-group" style="flex:2;"><label>Note</label><input type="text" id="inp-note" value="Daily Shift"></div>
-      </div>
-      <button class="btn btn-primary" onclick="addLog()">+ Log Worked Hours</button>
-    </div>
-  </div>
-
-  <!-- CALENDAR TAB -->
-  <div id="tab-calendar" class="tab-content">
-    <div class="card">
-      <div class="cal-header">
-        <button class="btn" style="padding: 2px 8px;" onclick="changeMonth(-1)">‹</button>
-        <div class="title" id="cal-month-title" style="font-size: 0.8rem;">Month Year</div>
-        <button class="btn" style="padding: 2px 8px;" onclick="changeMonth(1)">›</button>
-      </div>
-      <div class="cal-grid" id="cal-grid"></div>
-    </div>
-  </div>
-
-  <!-- HISTORY TAB -->
-  <div id="tab-history" class="tab-content">
-    <div class="card">
-      <div class="log-list" id="log-list"></div>
-    </div>
-    <button class="btn btn-danger" onclick="deleteSelectedLog()">Delete Selected Entry</button>
-  </div>
-</div>
-
-<script>
-  const TARGET_MINS = 480 * 60;
-  let logs = JSON.parse(localStorage.getItem('ojt_logs') || '[]');
-  let selectedLogIdx = null;
-  let currYear = new Date().getFullYear();
-  let currMonth = new Date().getMonth();
-
-  // Set default date picker to today
-  document.getElementById('inp-date').valueAsDate = new Date();
-
-  function switchTab(name) {
-    document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', ['tracker','log','calendar','history'][i] === name));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.getElementById(`tab-${name}`).classList.add('active');
-    if (name === 'calendar') renderCalendar();
-  }
-
-  function setPreset(h, m, note) {
-    document.getElementById('inp-h').value = h;
-    document.getElementById('inp-m').value = m;
-    document.getElementById('inp-note').value = note;
-  }
-
-  function addLog() {
-    const h = parseInt(document.getElementById('inp-h').value) || 0;
-    const m = parseInt(document.getElementById('inp-m').value) || 0;
-    const note = document.getElementById('inp-note').value.trim() || 'Daily Shift';
-    
-    // Parse chosen date
-    const dateVal = document.getElementById('inp-date').value;
-    let chosenDate = new Date();
-    if (dateVal) {
-      const parts = dateVal.split('-');
-      chosenDate = new Date(parts[0], parts[1] - 1, parts[2]);
-    }
-
-    const dateStr = chosenDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
-    const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-
-    logs.push({ 
-      mins: (h * 60) + m, 
-      desc: note, 
-      date: `${dateStr} - ${timeStr}`,
-      rawDate: chosenDate.toISOString()
-    });
-    
-    saveData();
-    switchTab('tracker');
-  }
-
-  function saveData() {
-    localStorage.setItem('ojt_logs', JSON.stringify(logs));
-    updateUI();
-  }
-
-  function updateUI() {
-    const totalMins = logs.reduce((a, b) => a + b.mins, 0);
-    const remMins = Math.max(0, TARGET_MINS - totalMins);
-    
-    document.getElementById('rem-hours').innerText = `${Math.floor(remMins/60)}h ${remMins%60}m`;
-    const pct = Math.min(100, (totalMins / TARGET_MINS) * 100);
-    document.getElementById('progress-fill').style.width = `${pct}%`;
-    document.getElementById('progress-text').innerText = `${Math.floor(totalMins/60)}h ${totalMins%60}m completed (${pct.toFixed(1)}%)`;
-
-    // Render History
-    const listEl = document.getElementById('log-list');
-    listEl.innerHTML = logs.map((l, i) => `
-      <div class="log-item ${selectedLogIdx === i ? 'selected' : ''}" onclick="selectedLogIdx=${i}; updateUI();">
-        <span>+${Math.floor(l.mins/60)}h${l.mins%60}m | ${l.desc}</span>
-        <span style="color:var(--text-muted)">${l.date.split(' - ')[0]}</span>
-      </div>
-    `).join('');
-
-    // ETA Calc
-    document.getElementById('eta-text').innerText = remMins <= 0 ? "🎉 Completed!" : getETA(remMins);
-  }
-
-  function getETA(minsLeft) {
-    let curr = new Date();
-    while (minsLeft > 0) {
-      if (curr.getDay() !== 0 && curr.getDay() !== 6) {
-        minsLeft -= 480;
-      }
-      if (minsLeft > 0) curr.setDate(curr.getDate() + 1);
-    }
-    return curr.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-  }
-
-  function renderCalendar() {
-    const title = document.getElementById('cal-month-title');
-    const grid = document.getElementById('cal-grid');
-    const d = new Date(currYear, currMonth, 1);
-    title.innerText = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-
-    grid.innerHTML = ['M','T','W','T','F','S','S'].map(n => `<div class="cal-day-name">${n}</div>`).join('');
-    
-    let firstDay = (d.getDay() + 6) % 7;
-    let daysInMonth = new Date(currYear, currMonth + 1, 0).getDate();
-
-    // Map logs to days
-    const dayMap = {};
-    logs.forEach(l => {
-      const dt = l.rawDate ? new Date(l.rawDate) : new Date(l.date.split(' - ')[0]);
-      if (dt.getFullYear() === currYear && dt.getMonth() === currMonth) {
-        dayMap[dt.getDate()] = (dayMap[dt.getDate()] || 0) + l.mins;
-      }
-    });
-
-    for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
-    for (let day = 1; day <= daysInMonth; day++) {
-      let statusClass = '';
-      if (dayMap[day]) {
-        const mins = dayMap[day];
-        if (mins >= 480) statusClass = 'status-full';
-        else if (mins <= 300) statusClass = 'status-half';
-        else statusClass = 'status-late';
-      }
-      grid.innerHTML += `<div class="cal-cell ${statusClass}">${day}</div>`;
-    }
-  }
-
-  function changeMonth(delta) {
-    currMonth += delta;
-    if (currMonth > 11) { currMonth = 0; currYear++; }
-    if (currMonth < 0) { currMonth = 11; currYear--; }
-    renderCalendar();
-  }
-
-  function deleteSelectedLog() {
-    if (selectedLogIdx !== null) {
-      logs.splice(selectedLogIdx, 1);
-      selectedLogIdx = null;
-      saveData();
-    }
-  }
-
-  updateUI();
-</script>
-</body>
-</html>
-
