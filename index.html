@@ -33,7 +33,7 @@
       flex-direction: column; 
     }
 
-    /* Floating Pill Navigation Bar */
+    /* Floating Navigation Bar */
     .tabs { 
       display: flex; 
       gap: 4px; 
@@ -102,7 +102,24 @@
     input, select, textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 10px; font-size: 0.85rem; }
     input[type="date"] { text-align: left; color-scheme: dark; }
     input[type="color"] { height: 38px; padding: 2px; cursor: pointer; }
-    textarea { resize: none; line-height: 1.5; font-size: 0.85rem; }
+    textarea { resize: none; line-height: 1.5; font-size: 0.88rem; }
+
+    /* Day Checkboxes Row */
+    .day-selector { display: flex; justify-content: space-between; gap: 4px; margin-top: 6px; }
+    .day-chip { flex: 1; text-align: center; }
+    .day-chip input { display: none; }
+    .day-chip label { 
+      display: block; 
+      padding: 8px 2px; 
+      background: var(--card-alt); 
+      border: 1px solid var(--border); 
+      border-radius: 8px; 
+      font-size: 0.68rem; 
+      font-weight: 700; 
+      color: var(--text-muted); 
+      cursor: pointer; 
+    }
+    .day-chip input:checked + label { background: var(--accent); color: #11111b; border-color: var(--accent); }
 
     /* Segmented Filters */
     .filter-bar { display: flex; gap: 4px; background: var(--card-alt); padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
@@ -134,10 +151,8 @@
       transition: border-color 0.2s ease;
     }
     .log-item.selected { border-color: var(--accent); background: #28283d; }
-    .log-info-main { font-weight: 700; font-size: 0.82rem; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+    .log-info-main { font-weight: 700; font-size: 0.82rem; }
     .log-info-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 3px; }
-    
-    /* Badges */
     .badge { font-size: 0.62rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
     .badge-draft { background: var(--yellow); color: #11111b; }
     .badge-saved { background: var(--mint); color: #11111b; }
@@ -223,6 +238,7 @@
     <div class="card card-alt" style="padding: 20px 18px;">
       <div class="title">✨ ESTIMATED COMPLETION</div>
       <div class="eta-text" id="eta-text">Calculating...</div>
+      <div style="font-size:0.65rem; color:var(--text-muted); margin-top:6px;" id="eta-schedule-sub">Based on current schedule settings</div>
     </div>
   </div>
 
@@ -252,7 +268,7 @@
         </div>
         <div class="input-group">
           <label>Optional Diary / Task Notes</label>
-          <textarea id="inp-diary-direct" style="height: 65px;" placeholder="Write any tasks, achievements, or draft report notes for today..."></textarea>
+          <textarea id="inp-diary-direct" style="height: 65px;" placeholder="Write tasks, challenges, or reflections..."></textarea>
         </div>
       </div>
       <button class="btn btn-primary" onclick="addLog()">+ Log Worked Hours</button>
@@ -300,6 +316,29 @@
 
   <!-- SETTINGS TAB -->
   <div id="tab-settings" class="tab-content">
+    <!-- Schedule Predictor Settings Card -->
+    <div class="card settings-card">
+      <h4>📅 Flexible Prediction Schedule</h4>
+      <p style="font-size:0.65rem; color:var(--text-muted); margin-bottom:8px;">Select which days you are available to attend OJT. (e.g. Untick Mon/Tue for classes).</p>
+      
+      <div class="day-selector">
+        <div class="day-chip"><input type="checkbox" id="sch-mon"><label for="sch-mon">M</label></div>
+        <div class="day-chip"><input type="checkbox" id="sch-tue"><label for="sch-tue">T</label></div>
+        <div class="day-chip"><input type="checkbox" id="sch-wed" checked><label for="sch-wed">W</label></div>
+        <div class="day-chip"><input type="checkbox" id="sch-thu" checked><label for="sch-thu">T</label></div>
+        <div class="day-chip"><input type="checkbox" id="sch-fri" checked><label for="sch-fri">F</label></div>
+        <div class="day-chip"><input type="checkbox" id="sch-sat"><label for="sch-sat">S</label></div>
+        <div class="day-chip"><input type="checkbox" id="sch-sun"><label for="sch-sun">S</label></div>
+      </div>
+
+      <div class="input-row" style="margin-top:10px;">
+        <div class="input-group">
+          <label>Estimated Hours / Shift</label>
+          <input type="number" id="set-shift-hours" value="8">
+        </div>
+      </div>
+    </div>
+
     <div class="card settings-card">
       <h4>⚙️ Tracker Mode</h4>
       <div class="toggle-row">
@@ -359,7 +398,7 @@
   </div>
 </div>
 
-<!-- FULL SCREEN DIARY / WEEKLY REPORT DRAWER -->
+<!-- FULL SCREEN DIARY DRAWER -->
 <div class="modal-overlay" id="diary-modal">
   <div class="modal-box">
     <div class="modal-header">
@@ -384,6 +423,8 @@
     targetP2: 40,
     nameP1: 'OJT 1',
     nameP2: 'OJT 2',
+    workDays: [3, 4, 5], // 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat, 0=Sun (Default Wed-Fri for class schedule)
+    shiftHours: 8,
     colors: {
       full: '#A6E3A1',
       half: '#F9E2AF',
@@ -537,7 +578,7 @@
       document.getElementById('f-p2').innerText = settings.nameP2 || 'OJT 2';
     }
 
-    // Render History Entries with Visual Indicators
+    // History Entries
     const listEl = document.getElementById('log-list');
     const filteredLogs = logs.filter(l => {
       if (!isMulti || activeHistoryFilter === 'all') return true;
@@ -550,7 +591,6 @@
       const realIndex = logs.indexOf(l);
       const catBadge = isMulti ? `<span class="badge" style="background:${l.category === 'p2' ? 'var(--blue)' : 'var(--mint)'}; color:#11111B;">${l.category === 'p2' ? (settings.nameP2||'OJT 2') : (settings.nameP1||'OJT 1')}</span>` : '';
       
-      // Diary Status Badge
       let diaryBadge = '';
       if (l.diaryDraft && l.diaryDraft.trim() !== '') {
         diaryBadge = `<span class="badge badge-draft">📝 Draft</span>`;
@@ -572,8 +612,14 @@
       `;
     }).join('');
 
-    document.getElementById('eta-text').innerText = remTotalMins <= 0 ? "🎉 Completed!" : calculateDetailedETA(remTotalMins);
+    // Flexible ETA Prediction Calculation
+    document.getElementById('eta-text').innerText = remTotalMins <= 0 ? "🎉 Completed!" : calculateFlexibleETA(remTotalMins);
     
+    // Day Names Subtitle Summary
+    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const activeDaysStr = (settings.workDays || [1,2,3,4,5]).map(d => dayNames[d]).join(', ');
+    document.getElementById('eta-schedule-sub').innerText = `Active Shifts: ${activeDaysStr || 'None'} (${settings.shiftHours || 8}h/day)`;
+
     document.getElementById('leg-dot-full').style.background = settings.colors.full;
     document.getElementById('leg-dot-half').style.background = settings.colors.half;
     document.getElementById('leg-dot-late').style.background = settings.colors.late;
@@ -610,9 +656,16 @@
     }
   }
 
-  function calculateDetailedETA(remainingMins) {
+  // Flexible Prediction Schedule Engine
+  function calculateFlexibleETA(remainingMins) {
     let curr = new Date();
-    
+    let minsLeft = remainingMins;
+    const workDays = settings.workDays || [1,2,3,4,5];
+    const shiftMins = (settings.shiftHours || 8) * 60;
+
+    if (shiftMins <= 0 || workDays.length === 0) return "Select active work days in Settings";
+
+    // Shift Hours Standard Time Boundaries
     if (curr.getHours() > 17 || (curr.getHours() === 17 && curr.getMinutes() >= 45)) {
       curr.setDate(curr.getDate() + 1);
       curr.setHours(8, 45, 0, 0);
@@ -620,44 +673,31 @@
       curr.setHours(8, 45, 0, 0);
     }
 
-    while (curr.getDay() === 0 || curr.getDay() === 6) {
-      curr.setDate(curr.getDate() + 1);
-      curr.setHours(8, 45, 0, 0);
-    }
-
-    let minsLeft = remainingMins;
-
     while (minsLeft > 0) {
-      let lunchStart = new Date(curr); lunchStart.setHours(12, 0, 0, 0);
-      let lunchEnd = new Date(curr); lunchEnd.setHours(13, 0, 0, 0);
-      let shiftEnd = new Date(curr); shiftEnd.setHours(17, 45, 0, 0);
-
-      if (curr >= lunchStart && curr < lunchEnd) {
-        curr = new Date(lunchEnd);
-      }
-
-      let availableToday = 0;
-      if (curr < lunchStart) {
-        availableToday = Math.floor((lunchStart - curr) / 60000) + 285;
-      } else {
-        availableToday = Math.floor((shiftEnd - curr) / 60000);
-      }
-
-      if (minsLeft <= availableToday) {
-        let addMins = minsLeft;
-        let futureTime = new Date(curr.getTime() + addMins * 60000);
-        if (curr < lunchStart && futureTime >= lunchStart) {
-          addMins += 60;
+      const dayOfWeek = curr.getDay(); // 0 = Sun, 1 = Mon ...
+      if (workDays.includes(dayOfWeek)) {
+        let lunchStart = new Date(curr); lunchStart.setHours(12, 0, 0, 0);
+        let lunchEnd = new Date(curr); lunchEnd.setHours(13, 0, 0, 0);
+        
+        if (curr >= lunchStart && curr < lunchEnd) {
+          curr = new Date(lunchEnd);
         }
-        curr = new Date(curr.getTime() + addMins * 60000);
-        minsLeft = 0;
+
+        let availableToday = shiftMins;
+        if (minsLeft <= availableToday) {
+          let addMins = minsLeft;
+          let futureTime = new Date(curr.getTime() + addMins * 60000);
+          if (curr < lunchStart && futureTime >= lunchStart) addMins += 60;
+          curr = new Date(curr.getTime() + addMins * 60000);
+          minsLeft = 0;
+        } else {
+          minsLeft -= availableToday;
+          curr.setDate(curr.getDate() + 1);
+          curr.setHours(8, 45, 0, 0);
+        }
       } else {
-        minsLeft -= availableToday;
         curr.setDate(curr.getDate() + 1);
         curr.setHours(8, 45, 0, 0);
-        while (curr.getDay() === 0 || curr.getDay() === 6) {
-          curr.setDate(curr.getDate() + 1);
-        }
       }
     }
 
@@ -745,6 +785,17 @@
     document.getElementById('set-target-p2').value = settings.targetP2 || 40;
     document.getElementById('set-name-p1').value = settings.nameP1 || 'OJT 1';
     document.getElementById('set-name-p2').value = settings.nameP2 || 'OJT 2';
+    document.getElementById('set-shift-hours').value = settings.shiftHours || 8;
+
+    // Load Checkboxes for Days (1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat, 0=Sun)
+    const days = settings.workDays || [1, 2, 3, 4, 5];
+    document.getElementById('sch-mon').checked = days.includes(1);
+    document.getElementById('sch-tue').checked = days.includes(2);
+    document.getElementById('sch-wed').checked = days.includes(3);
+    document.getElementById('sch-thu').checked = days.includes(4);
+    document.getElementById('sch-fri').checked = days.includes(5);
+    document.getElementById('sch-sat').checked = days.includes(6);
+    document.getElementById('sch-sun').checked = days.includes(0);
 
     document.getElementById('col-full').value = settings.colors.full;
     document.getElementById('col-half').value = settings.colors.half;
@@ -775,6 +826,18 @@
     settings.targetP2 = parseInt(document.getElementById('set-target-p2').value) || 40;
     settings.nameP1 = document.getElementById('set-name-p1').value.trim() || 'OJT 1';
     settings.nameP2 = document.getElementById('set-name-p2').value.trim() || 'OJT 2';
+    settings.shiftHours = parseInt(document.getElementById('set-shift-hours').value) || 8;
+
+    // Save Active Work Days
+    const activeDays = [];
+    if (document.getElementById('sch-mon').checked) activeDays.push(1);
+    if (document.getElementById('sch-tue').checked) activeDays.push(2);
+    if (document.getElementById('sch-wed').checked) activeDays.push(3);
+    if (document.getElementById('sch-thu').checked) activeDays.push(4);
+    if (document.getElementById('sch-fri').checked) activeDays.push(5);
+    if (document.getElementById('sch-sat').checked) activeDays.push(6);
+    if (document.getElementById('sch-sun').checked) activeDays.push(0);
+    settings.workDays = activeDays;
 
     settings.colors = {
       full: document.getElementById('col-full').value,
@@ -800,4 +863,3 @@
 </script>
 </body>
 </html>
-
