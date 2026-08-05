@@ -102,7 +102,47 @@
     input, select, textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 10px; font-size: 0.85rem; }
     input[type="date"] { text-align: left; color-scheme: dark; }
     input[type="color"] { height: 38px; padding: 2px; cursor: pointer; }
-    textarea { resize: none; line-height: 1.5; font-size: 0.88rem; }
+    
+    /* Rich Text Editor Styling */
+    .editor-toolbar {
+      display: flex;
+      gap: 4px;
+      background: var(--card-alt);
+      padding: 6px;
+      border-radius: 10px 10px 0 0;
+      border: 1px solid var(--border);
+      border-bottom: none;
+    }
+    .tool-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .tool-btn:active { background: var(--accent); color: #11111b; }
+
+    .rich-editor {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px;
+      border-radius: 0 0 10px 10px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      outline: none;
+      overflow-y: auto;
+      text-align: left;
+    }
+    .rich-editor:empty:before {
+      content: attr(data-placeholder);
+      color: var(--text-muted);
+    }
+    .rich-editor ul, .rich-editor ol { padding-left: 20px; }
 
     /* Day Checkboxes Row */
     .day-selector { display: flex; justify-content: space-between; gap: 4px; margin-top: 6px; }
@@ -274,7 +314,13 @@
         </div>
         <div class="input-group">
           <label>Optional Diary / Task Notes</label>
-          <textarea id="inp-diary-direct" style="height: 65px;" placeholder="Write tasks, challenges, or reflections..."></textarea>
+          <div class="editor-toolbar">
+            <button class="tool-btn" onclick="execCmd('bold')"><b>B</b></button>
+            <button class="tool-btn" onclick="execCmd('italic')"><i>I</i></button>
+            <button class="tool-btn" onclick="execCmd('underline')"><u>U</u></button>
+            <button class="tool-btn" onclick="execCmd('insertUnorderedList')">• List</button>
+          </div>
+          <div class="rich-editor" id="inp-diary-direct" contenteditable="true" style="height: 100px;" data-placeholder="Write tasks, challenges, or reflections..."></div>
         </div>
       </div>
       <button class="btn btn-primary" onclick="addLog()">+ Log Worked Hours</button>
@@ -425,7 +471,14 @@
 
     <div class="input-group" style="flex:1; display:flex; flex-direction:column; margin-bottom:12px;">
       <label>Diary / Weekly Report</label>
-      <textarea id="diary-textarea" style="flex:1;" placeholder="Write detailed notes on your tasks, progress, or reflections..."></textarea>
+      <div class="editor-toolbar">
+        <button class="tool-btn" onclick="execCmd('bold')"><b>B</b></button>
+        <button class="tool-btn" onclick="execCmd('italic')"><i>I</i></button>
+        <button class="tool-btn" onclick="execCmd('underline')"><u>U</u></button>
+        <button class="tool-btn" onclick="execCmd('insertUnorderedList')">• List</button>
+        <button class="tool-btn" onclick="execCmd('insertOrderedList')">1. List</button>
+      </div>
+      <div class="rich-editor" id="diary-textarea" contenteditable="true" style="flex:1;" data-placeholder="Write detailed notes on your tasks, progress, or reflections..."></div>
     </div>
 
     <div style="display:flex; gap:8px;">
@@ -486,7 +539,10 @@
 </div>
 
 <script>
-  // Helper to format preset duration dynamically
+  function execCmd(cmd) {
+    document.execCommand(cmd, false, null);
+  }
+
   function formatPresetLabel(name, h, m) {
     if (!name || name.trim() === '') name = 'Shift';
     let duration = '';
@@ -504,7 +560,7 @@
     targetP2: 40,
     nameP1: 'OJT 1',
     nameP2: 'OJT 2',
-    workDays: [1, 2, 3, 4, 5], // Default M, T, W, T, F
+    workDays: [1, 2, 3, 4, 5],
     shiftHours: 8,
     presets: [
       { name: 'Full Day', h: 8, m: 0, note: 'Daily Shift', color: '#A6E3A1' },
@@ -515,16 +571,6 @@
   };
 
   let settings = JSON.parse(localStorage.getItem('ojt_settings') || JSON.stringify(DEFAULT_SETTINGS));
-  
-  // Migration fallback if old settings color structure exists
-  if (settings.colors) {
-    if (settings.presets && settings.presets[0]) settings.presets[0].color = settings.colors.full || '#A6E3A1';
-    if (settings.presets && settings.presets[1]) settings.presets[1].color = settings.colors.half || '#F9E2AF';
-    if (settings.presets && settings.presets[2]) settings.presets[2].color = settings.colors.late || '#FAB387';
-    if (settings.presets && settings.presets[3]) settings.presets[3].color = settings.colors.off || '#F38BA8';
-    delete settings.colors;
-  }
-
   let logs = JSON.parse(localStorage.getItem('ojt_logs') || '[]');
   let selectedLogIdx = null;
   let activeHistoryFilter = 'all';
@@ -537,7 +583,7 @@
   // Autosave Draft Engine
   document.getElementById('diary-textarea').addEventListener('input', () => {
     if (activeDiaryIdx !== null) {
-      logs[activeDiaryIdx].diaryDraft = document.getElementById('diary-textarea').value;
+      logs[activeDiaryIdx].diaryDraft = document.getElementById('diary-textarea').innerHTML;
       localStorage.setItem('ojt_logs', JSON.stringify(logs));
       const tag = document.getElementById('draft-tag');
       tag.classList.add('visible');
@@ -579,7 +625,7 @@
     const h = parseInt(document.getElementById('inp-h').value) || 0;
     const m = parseInt(document.getElementById('inp-m').value) || 0;
     const note = document.getElementById('inp-note').value.trim() || 'Daily Shift';
-    const directDiary = document.getElementById('inp-diary-direct').value.trim();
+    const directDiary = document.getElementById('inp-diary-direct').innerHTML.trim();
     const cat = settings.multiMode ? document.getElementById('inp-category').value : 'p1';
     
     const dateVal = document.getElementById('inp-date').value;
@@ -602,7 +648,7 @@
       rawDate: chosenDate.toISOString()
     });
     
-    document.getElementById('inp-diary-direct').value = '';
+    document.getElementById('inp-diary-direct').innerHTML = '';
     saveData();
     switchTab('tracker');
   }
@@ -701,15 +747,12 @@
       `;
     }).join('');
 
-    // Flexible ETA Prediction Calculation
     document.getElementById('eta-text').innerText = remTotalMins <= 0 ? "🎉 Completed!" : calculateFlexibleETA(remTotalMins);
     
-    // Day Names Subtitle Summary
     const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const activeDaysStr = (settings.workDays || [1,2,3,4,5]).map(d => dayNames[d]).join(', ');
     document.getElementById('eta-schedule-sub').innerText = `Active Shifts: ${activeDaysStr || 'None'} (${settings.shiftHours || 8}h/day)`;
 
-    // Dynamic Legend Bar
     const legendContainer = document.getElementById('cal-legend-container');
     if (legendContainer) {
       legendContainer.innerHTML = settings.presets.map(p => `
@@ -861,7 +904,7 @@
     document.getElementById('edit-h').value = Math.floor(l.mins / 60);
     document.getElementById('edit-m').value = l.mins % 60;
     document.getElementById('edit-note').value = l.desc;
-    document.getElementById('diary-textarea').value = l.diaryDraft || l.diary || '';
+    document.getElementById('diary-textarea').innerHTML = l.diaryDraft || l.diary || '';
     document.getElementById('diary-modal').classList.add('active');
   }
 
@@ -879,7 +922,7 @@
 
       logs[activeDiaryIdx].mins = (editH * 60) + editM;
       logs[activeDiaryIdx].desc = editNote;
-      logs[activeDiaryIdx].diary = document.getElementById('diary-textarea').value;
+      logs[activeDiaryIdx].diary = document.getElementById('diary-textarea').innerHTML;
       delete logs[activeDiaryIdx].diaryDraft;
       
       saveData();
@@ -946,7 +989,6 @@
     let firstDay = (d.getDay() + 6) % 7;
     let daysInMonth = new Date(currYear, currMonth + 1, 0).getDate();
 
-    // Dynamic color matching based on configured presets
     const dayMap = {};
     logs.forEach(l => {
       let dt = l.rawDate ? new Date(l.rawDate) : new Date(l.date.split(' - ')[0]);
@@ -958,7 +1000,6 @@
       if (!isNaN(dt.getTime()) && dt.getFullYear() === currYear && dt.getMonth() === currMonth) {
         let col = '#A6E3A1';
         
-        // Find best match preset color
         let matchedPreset = settings.presets.find(p => p.h * 60 + p.m === l.mins);
         if (!matchedPreset) {
           const descLower = l.desc.toLowerCase();
@@ -968,7 +1009,6 @@
         if (matchedPreset && matchedPreset.color) {
           col = matchedPreset.color;
         } else {
-          // Fallback logic
           if (l.mins === 0) col = (settings.presets[3] && settings.presets[3].color) || '#F38BA8';
           else if (l.mins <= 300) col = (settings.presets[1] && settings.presets[1].color) || '#F9E2AF';
           else if (l.mins < 480) col = (settings.presets[2] && settings.presets[2].color) || '#FAB387';
@@ -997,11 +1037,11 @@
 
   function changeMonth(delta) {
     currMonth += delta;
-    if (currMonth > 12) {
-      currMonth = 1;
+    if (currMonth > 11) {
+      currMonth = 0;
       currYear++;
-    } else if (currMonth < 1) {
-      currMonth = 12;
+    } else if (currMonth < 0) {
+      currMonth = 11;
       currYear--;
     }
     renderCalendar();
