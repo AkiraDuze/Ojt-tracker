@@ -170,7 +170,7 @@
     input:checked + .slider:before { transform: translateX(18px); background-color: #11111b; }
     .color-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-    /* Full Screen Diary Drawer */
+    /* Full Screen Modal */
     .modal-overlay { 
       display: none; 
       position: fixed; 
@@ -189,11 +189,12 @@
       border-radius: 22px; 
       width: 100%; 
       max-width: 400px; 
-      height: 85%; 
+      max-height: 90%; 
       display: flex; 
       flex-direction: column; 
       padding: 18px; 
       box-shadow: 0 12px 35px rgba(0,0,0,0.6); 
+      overflow-y: auto;
     }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .draft-tag { font-size: 0.68rem; color: var(--mint); font-weight: 700; opacity: 0; transition: opacity 0.3s; }
@@ -244,8 +245,13 @@
 
   <!-- LOG TIME TAB -->
   <div id="tab-log" class="tab-content">
-    <div class="title">QUICK PRESETS</div>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="title">QUICK PRESETS</div>
+      <button class="btn" style="padding:4px 10px; font-size:0.68rem; border-color:var(--accent); color:var(--accent);" onclick="openBatchModal()">⚡ Batch Populate</button>
+    </div>
+
     <div class="preset-grid" id="preset-buttons-container"></div>
+    
     <div class="card card-flex">
       <div>
         <div class="input-row" style="margin-bottom: 10px;">
@@ -309,13 +315,30 @@
       <div class="log-list" id="log-list"></div>
     </div>
     <div style="display: flex; gap: 8px;">
-      <button class="btn" style="flex:1.2;" onclick="openDiaryForSelected()">📖 Open Diary Entry</button>
+      <button class="btn" style="flex:1.2;" onclick="openDiaryForSelected()">📖 Edit Log / Diary</button>
       <button class="btn btn-danger" style="flex:0.8;" onclick="deleteSelectedLog()">Delete</button>
     </div>
   </div>
 
   <!-- SETTINGS TAB -->
   <div id="tab-settings" class="tab-content">
+    <!-- Sync & Backup Section -->
+    <div class="card settings-card">
+      <h4>🔄 Sync / Restore Data</h4>
+      <p style="font-size:0.65rem; color:var(--text-muted); margin-bottom:8px;">Transfer logs between your phone and desktop easily.</p>
+      
+      <div style="display:flex; gap:6px; margin-bottom:8px;">
+        <button class="btn" style="flex:1; padding:8px; font-size:0.7rem;" onclick="copySyncCode()">📋 Copy Phone Code</button>
+        <button class="btn" style="flex:1; padding:8px; font-size:0.7rem;" onclick="downloadDataFile()">💾 Download File</button>
+      </div>
+
+      <div class="input-group">
+        <label>Paste Phone Sync Code Here</label>
+        <textarea id="inp-sync-code" style="height: 50px;" placeholder="Paste sync code here..."></textarea>
+      </div>
+      <button class="btn btn-primary" style="margin-top:6px; padding:10px;" onclick="importSyncCode()">Import Data to Desktop</button>
+    </div>
+
     <!-- Schedule Predictor Settings Card -->
     <div class="card settings-card">
       <h4>📅 Flexible Prediction Schedule</h4>
@@ -398,21 +421,82 @@
   </div>
 </div>
 
-<!-- FULL SCREEN DIARY DRAWER -->
+<!-- EDIT ENTRY & DIARY MODAL -->
 <div class="modal-overlay" id="diary-modal">
   <div class="modal-box">
     <div class="modal-header">
       <div>
-        <div class="title" id="diary-modal-title">DIARY & REPORT LOG</div>
+        <div class="title" id="diary-modal-title">EDIT LOG & DIARY ENTRY</div>
         <div style="font-size:0.78rem; font-weight:700; color:var(--text); margin-top: 2px;" id="diary-modal-date">Date</div>
       </div>
       <span class="draft-tag" id="draft-tag">✓ Saved</span>
     </div>
-    <textarea id="diary-textarea" style="flex:1; margin-bottom:12px;" placeholder="Write detailed notes on your tasks, progress, or weekly report reflections..."></textarea>
+
+    <div class="input-row" style="margin-bottom:8px;">
+      <div class="input-group"><label>Hours</label><input type="number" id="edit-h"></div>
+      <div class="input-group"><label>Mins</label><input type="number" id="edit-m"></div>
+      <div class="input-group" style="flex:2;"><label>Note</label><input type="text" id="edit-note"></div>
+    </div>
+
+    <div class="input-group" style="flex:1; display:flex; flex-direction:column; margin-bottom:12px;">
+      <label>Diary / Weekly Report</label>
+      <textarea id="diary-textarea" style="flex:1;" placeholder="Write detailed notes on your tasks, progress, or reflections..."></textarea>
+    </div>
+
     <div style="display:flex; gap:8px;">
       <button class="btn" style="flex:1;" onclick="closeDiaryModal()">Close</button>
-      <button class="btn btn-primary" style="flex:1; margin:0;" onclick="saveDiaryEntry()">Save Diary Entry</button>
+      <button class="btn btn-primary" style="flex:1; margin:0;" onclick="saveDiaryEntry()">Save Changes</button>
     </div>
+  </div>
+</div>
+
+<!-- BATCH POPULATE MODAL -->
+<div class="modal-overlay" id="batch-modal">
+  <div class="modal-box" style="height:auto; max-height:85%;">
+    <div class="modal-header">
+      <div class="title">⚡ BATCH POPULATE LOGS</div>
+      <button class="btn" style="padding:2px 8px; font-size:0.7rem;" onclick="closeBatchModal()">✕</button>
+    </div>
+
+    <p style="font-size:0.68rem; color:var(--text-muted); margin-bottom:10px;">Fill past logs automatically across a date range. You can re-edit any specific day later!</p>
+
+    <div class="input-row" style="margin-bottom:8px;">
+      <div class="input-group"><label>Start Date</label><input type="date" id="batch-start"></div>
+      <div class="input-group"><label>End Date</label><input type="date" id="batch-end"></div>
+    </div>
+
+    <div class="input-group" style="margin-bottom:8px;">
+      <label>Include Days of Week</label>
+      <div class="day-selector">
+        <div class="day-chip"><input type="checkbox" id="b-mon"><label for="b-mon">M</label></div>
+        <div class="day-chip"><input type="checkbox" id="b-tue"><label for="b-tue">T</label></div>
+        <div class="day-chip"><input type="checkbox" id="b-wed" checked><label for="b-wed">W</label></div>
+        <div class="day-chip"><input type="checkbox" id="b-thu" checked><label for="b-thu">T</label></div>
+        <div class="day-chip"><input type="checkbox" id="b-fri" checked><label for="b-fri">F</label></div>
+        <div class="day-chip"><input type="checkbox" id="b-sat"><label for="b-sat">S</label></div>
+        <div class="day-chip"><input type="checkbox" id="b-sun"><label for="b-sun">S</label></div>
+      </div>
+    </div>
+
+    <div class="input-row" style="margin-bottom:8px;">
+      <div class="input-group"><label>Shift Hours</label><input type="number" id="batch-h" value="8"></div>
+      <div class="input-group"><label>Shift Mins</label><input type="number" id="batch-m" value="0"></div>
+    </div>
+
+    <div class="input-group" style="margin-bottom:12px;">
+      <label>Summary Note</label>
+      <input type="text" id="batch-note" value="Daily Shift">
+    </div>
+
+    <div class="input-group" id="group-batch-category" style="margin-bottom:12px; display:none;">
+      <label>Assign To Target OJT</label>
+      <select id="batch-category">
+        <option value="p1">Primary OJT</option>
+        <option value="p2">Secondary OJT</option>
+      </select>
+    </div>
+
+    <button class="btn btn-primary" onclick="generateBatchLogs()">Generate Batch Logs</button>
   </div>
 </div>
 
@@ -423,7 +507,7 @@
     targetP2: 40,
     nameP1: 'OJT 1',
     nameP2: 'OJT 2',
-    workDays: [3, 4, 5], // 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat, 0=Sun (Default Wed-Fri for class schedule)
+    workDays: [3, 4, 5],
     shiftHours: 8,
     colors: {
       full: '#A6E3A1',
@@ -612,10 +696,8 @@
       `;
     }).join('');
 
-    // Flexible ETA Prediction Calculation
     document.getElementById('eta-text').innerText = remTotalMins <= 0 ? "🎉 Completed!" : calculateFlexibleETA(remTotalMins);
     
-    // Day Names Subtitle Summary
     const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const activeDaysStr = (settings.workDays || [1,2,3,4,5]).map(d => dayNames[d]).join(', ');
     document.getElementById('eta-schedule-sub').innerText = `Active Shifts: ${activeDaysStr || 'None'} (${settings.shiftHours || 8}h/day)`;
@@ -628,6 +710,133 @@
     renderPresets();
   }
 
+  /* BATCH POPULATE FUNCTIONS */
+  function openBatchModal() {
+    const today = new Date();
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(today.getMonth() - 1);
+
+    document.getElementById('batch-start').valueAsDate = oneMonthAgo;
+    document.getElementById('batch-end').valueAsDate = today;
+
+    // Check Multi-OJT Category Option Visibility
+    document.getElementById('group-batch-category').style.display = settings.multiMode ? 'block' : 'none';
+    if (settings.multiMode) {
+      const sel = document.getElementById('batch-category');
+      sel.options[0].text = settings.nameP1 || 'Primary OJT';
+      sel.options[1].text = settings.nameP2 || 'Secondary OJT';
+    }
+
+    document.getElementById('batch-modal').classList.add('active');
+  }
+
+  function closeBatchModal() {
+    document.getElementById('batch-modal').classList.remove('active');
+  }
+
+  function generateBatchLogs() {
+    const startVal = document.getElementById('batch-start').value;
+    const endVal = document.getElementById('batch-end').value;
+
+    if (!startVal || !endVal) {
+      alert('Please select both a Start Date and End Date!');
+      return;
+    }
+
+    const startParts = startVal.split('-');
+    const endParts = endVal.split('-');
+    
+    let dt = new Date(startParts[0], startParts[1] - 1, startParts[2]);
+    const endDt = new Date(endParts[0], endParts[1] - 1, endParts[2]);
+
+    if (dt > endDt) {
+      alert('Start Date must be before End Date!');
+      return;
+    }
+
+    const activeBatchDays = [];
+    if (document.getElementById('b-mon').checked) activeBatchDays.push(1);
+    if (document.getElementById('b-tue').checked) activeBatchDays.push(2);
+    if (document.getElementById('b-wed').checked) activeBatchDays.push(3);
+    if (document.getElementById('b-thu').checked) activeBatchDays.push(4);
+    if (document.getElementById('b-fri').checked) activeBatchDays.push(5);
+    if (document.getElementById('b-sat').checked) activeBatchDays.push(6);
+    if (document.getElementById('b-sun').checked) activeBatchDays.push(0);
+
+    const h = parseInt(document.getElementById('batch-h').value) || 0;
+    const m = parseInt(document.getElementById('batch-m').value) || 0;
+    const note = document.getElementById('batch-note').value.trim() || 'Daily Shift';
+    const cat = settings.multiMode ? document.getElementById('batch-category').value : 'p1';
+
+    let count = 0;
+    while (dt <= endDt) {
+      const dayOfWeek = dt.getDay();
+      if (activeBatchDays.includes(dayOfWeek)) {
+        const dateStr = dt.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+        
+        logs.push({
+          mins: (h * 60) + m,
+          desc: note,
+          category: cat,
+          date: dateStr,
+          exactTime: '05:00 PM',
+          diary: '',
+          rawDate: dt.toISOString()
+        });
+        count++;
+      }
+      dt.setDate(dt.getDate() + 1);
+    }
+
+    saveData();
+    closeBatchModal();
+    alert(`🎉 Successfully generated ${count} daily log entries! You can edit any specific day in the History tab.`);
+    switchTab('tracker');
+  }
+
+  /* DATA SYNC & RESTORE FUNCTIONS */
+  function copySyncCode() {
+    const payload = JSON.stringify({ logs: logs, settings: settings });
+    navigator.clipboard.writeText(payload).then(() => {
+      alert('✓ Phone sync code copied to clipboard! Open the site on your desktop Settings tab and paste it into the import box.');
+    }).catch(() => {
+      alert('Could not auto-copy. You can download the backup file instead!');
+    });
+  }
+
+  function downloadDataFile() {
+    const payload = JSON.stringify({ logs: logs, settings: settings }, null, 2);
+    const blob = new Blob([payload], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ojt_backup_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+  }
+
+  function importSyncCode() {
+    const text = document.getElementById('inp-sync-code').value.trim();
+    if (!text) {
+      alert('Please paste the sync code from your phone first!');
+      return;
+    }
+    try {
+      const data = JSON.parse(text);
+      if (data.logs) logs = data.logs;
+      if (data.settings) settings = data.settings;
+      
+      localStorage.setItem('ojt_logs', JSON.stringify(logs));
+      localStorage.setItem('ojt_settings', JSON.stringify(settings));
+      
+      updateUI();
+      alert('🎉 Success! All logs and settings imported successfully.');
+      document.getElementById('inp-sync-code').value = '';
+      switchTab('tracker');
+    } catch (e) {
+      alert('Invalid code pasted. Make sure you copied the exact code from your phone!');
+    }
+  }
+
   function openDiaryForSelected() {
     if (selectedLogIdx !== null) openDiaryModal(selectedLogIdx);
     else alert('Please tap a log entry first!');
@@ -637,6 +846,9 @@
     activeDiaryIdx = idx;
     const l = logs[idx];
     document.getElementById('diary-modal-date').innerText = `${l.date} (${Math.floor(l.mins/60)}h ${l.mins%60}m) - ${l.desc}`;
+    document.getElementById('edit-h').value = Math.floor(l.mins / 60);
+    document.getElementById('edit-m').value = l.mins % 60;
+    document.getElementById('edit-note').value = l.desc;
     document.getElementById('diary-textarea').value = l.diaryDraft || l.diary || '';
     document.getElementById('diary-modal').classList.add('active');
   }
@@ -649,14 +861,20 @@
 
   function saveDiaryEntry() {
     if (activeDiaryIdx !== null) {
+      const editH = parseInt(document.getElementById('edit-h').value) || 0;
+      const editM = parseInt(document.getElementById('edit-m').value) || 0;
+      const editNote = document.getElementById('edit-note').value.trim() || 'Daily Shift';
+
+      logs[activeDiaryIdx].mins = (editH * 60) + editM;
+      logs[activeDiaryIdx].desc = editNote;
       logs[activeDiaryIdx].diary = document.getElementById('diary-textarea').value;
       delete logs[activeDiaryIdx].diaryDraft;
+      
       saveData();
       closeDiaryModal();
     }
   }
 
-  // Flexible Prediction Schedule Engine
   function calculateFlexibleETA(remainingMins) {
     let curr = new Date();
     let minsLeft = remainingMins;
@@ -665,7 +883,6 @@
 
     if (shiftMins <= 0 || workDays.length === 0) return "Select active work days in Settings";
 
-    // Shift Hours Standard Time Boundaries
     if (curr.getHours() > 17 || (curr.getHours() === 17 && curr.getMinutes() >= 45)) {
       curr.setDate(curr.getDate() + 1);
       curr.setHours(8, 45, 0, 0);
@@ -674,7 +891,7 @@
     }
 
     while (minsLeft > 0) {
-      const dayOfWeek = curr.getDay(); // 0 = Sun, 1 = Mon ...
+      const dayOfWeek = curr.getDay();
       if (workDays.includes(dayOfWeek)) {
         let lunchStart = new Date(curr); lunchStart.setHours(12, 0, 0, 0);
         let lunchEnd = new Date(curr); lunchEnd.setHours(13, 0, 0, 0);
@@ -787,7 +1004,6 @@
     document.getElementById('set-name-p2').value = settings.nameP2 || 'OJT 2';
     document.getElementById('set-shift-hours').value = settings.shiftHours || 8;
 
-    // Load Checkboxes for Days (1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat, 0=Sun)
     const days = settings.workDays || [1, 2, 3, 4, 5];
     document.getElementById('sch-mon').checked = days.includes(1);
     document.getElementById('sch-tue').checked = days.includes(2);
@@ -828,7 +1044,6 @@
     settings.nameP2 = document.getElementById('set-name-p2').value.trim() || 'OJT 2';
     settings.shiftHours = parseInt(document.getElementById('set-shift-hours').value) || 8;
 
-    // Save Active Work Days
     const activeDays = [];
     if (document.getElementById('sch-mon').checked) activeDays.push(1);
     if (document.getElementById('sch-tue').checked) activeDays.push(2);
