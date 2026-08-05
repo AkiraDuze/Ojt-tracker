@@ -128,7 +128,7 @@
 
     /* Calendar Grid */
     .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .cal-legend { display: flex; justify-content: center; gap: 12px; margin-bottom: 12px; font-size: 0.7rem; font-weight: 700; flex-wrap: wrap; }
+    .cal-legend { display: flex; justify-content: center; gap: 10px; margin-bottom: 12px; font-size: 0.68rem; font-weight: 700; flex-wrap: wrap; }
     .leg-item { display: flex; align-items: center; gap: 4px; }
     .dot { width: 8px; height: 8px; border-radius: 50%; }
 
@@ -291,12 +291,7 @@
           <button class="btn" style="padding: 6px 14px;" onclick="changeMonth(1)">›</button>
         </div>
 
-        <div class="cal-legend">
-          <div class="leg-item"><div class="dot" id="leg-dot-full"></div><span style="color:var(--text);">Full</span></div>
-          <div class="leg-item"><div class="dot" id="leg-dot-half"></div><span style="color:var(--text);">Half</span></div>
-          <div class="leg-item"><div class="dot" id="leg-dot-late"></div><span style="color:var(--text);">Late</span></div>
-          <div class="leg-item"><div class="dot" id="leg-dot-off"></div><span style="color:var(--text);">Off</span></div>
-        </div>
+        <div class="cal-legend" id="cal-legend-container"></div>
 
         <div class="cal-grid" id="cal-grid"></div>
       </div>
@@ -342,11 +337,11 @@
     <!-- Schedule Predictor Settings Card -->
     <div class="card settings-card">
       <h4>📅 Flexible Prediction Schedule</h4>
-      <p style="font-size:0.65rem; color:var(--text-muted); margin-bottom:8px;">Select which days you are available to attend OJT. (e.g. Untick Mon/Tue for classes).</p>
+      <p style="font-size:0.65rem; color:var(--text-muted); margin-bottom:8px;">Select which days you are available to attend OJT.</p>
       
       <div class="day-selector">
-        <div class="day-chip"><input type="checkbox" id="sch-mon"><label for="sch-mon">M</label></div>
-        <div class="day-chip"><input type="checkbox" id="sch-tue"><label for="sch-tue">T</label></div>
+        <div class="day-chip"><input type="checkbox" id="sch-mon" checked><label for="sch-mon">M</label></div>
+        <div class="day-chip"><input type="checkbox" id="sch-tue" checked><label for="sch-tue">T</label></div>
         <div class="day-chip"><input type="checkbox" id="sch-wed" checked><label for="sch-wed">W</label></div>
         <div class="day-chip"><input type="checkbox" id="sch-thu" checked><label for="sch-thu">T</label></div>
         <div class="day-chip"><input type="checkbox" id="sch-fri" checked><label for="sch-fri">F</label></div>
@@ -403,18 +398,8 @@
     </div>
 
     <div class="card settings-card">
-      <h4>⚡ Quick Presets</h4>
+      <h4>⚡ Quick Presets & Colors</h4>
       <div id="preset-settings-list"></div>
-    </div>
-
-    <div class="card settings-card">
-      <h4>🎨 Calendar Colors</h4>
-      <div class="color-grid">
-        <div class="input-group"><label>Full Day</label><input type="color" id="col-full" value="#A6E3A1"></div>
-        <div class="input-group"><label>Half Day</label><input type="color" id="col-half" value="#F9E2AF"></div>
-        <div class="input-group"><label>Late Shift</label><input type="color" id="col-late" value="#FAB387"></div>
-        <div class="input-group"><label>Absent / Off</label><input type="color" id="col-off" value="#F38BA8"></div>
-      </div>
     </div>
 
     <button class="btn btn-primary" style="margin-bottom: 12px;" onclick="saveSettings()">Save All Settings</button>
@@ -468,8 +453,8 @@
     <div class="input-group" style="margin-bottom:8px;">
       <label>Include Days of Week</label>
       <div class="day-selector">
-        <div class="day-chip"><input type="checkbox" id="b-mon"><label for="b-mon">M</label></div>
-        <div class="day-chip"><input type="checkbox" id="b-tue"><label for="b-tue">T</label></div>
+        <div class="day-chip"><input type="checkbox" id="b-mon" checked><label for="b-mon">M</label></div>
+        <div class="day-chip"><input type="checkbox" id="b-tue" checked><label for="b-tue">T</label></div>
         <div class="day-chip"><input type="checkbox" id="b-wed" checked><label for="b-wed">W</label></div>
         <div class="day-chip"><input type="checkbox" id="b-thu" checked><label for="b-thu">T</label></div>
         <div class="day-chip"><input type="checkbox" id="b-fri" checked><label for="b-fri">F</label></div>
@@ -501,29 +486,45 @@
 </div>
 
 <script>
+  // Helper to format preset duration dynamically
+  function formatPresetLabel(name, h, m) {
+    if (!name || name.trim() === '') name = 'Shift';
+    let duration = '';
+    if (h > 0 && m > 0) duration = `${h}h ${m}m`;
+    else if (h > 0) duration = `${h}h`;
+    else if (m > 0) duration = `${m}m`;
+    else duration = `0h`;
+
+    return `${name.trim()} (${duration})`;
+  }
+
   const DEFAULT_SETTINGS = {
     multiMode: false,
     targetP1: 480,
     targetP2: 40,
     nameP1: 'OJT 1',
     nameP2: 'OJT 2',
-    workDays: [3, 4, 5],
+    workDays: [1, 2, 3, 4, 5], // Default M, T, W, T, F
     shiftHours: 8,
-    colors: {
-      full: '#A6E3A1',
-      half: '#F9E2AF',
-      late: '#FAB387',
-      off: '#F38BA8'
-    },
     presets: [
-      { label: 'Full Day (8h)', h: 8, m: 0, note: 'Daily Shift' },
-      { label: 'Half Day (4h)', h: 4, m: 0, note: 'Half Day' },
-      { label: 'Late (7h 45m)', h: 7, m: 45, note: 'Late 15m' },
-      { label: 'Absent / Off (0h)', h: 0, m: 0, note: 'Absent' }
+      { name: 'Full Day', h: 8, m: 0, note: 'Daily Shift', color: '#A6E3A1' },
+      { name: 'Half Day', h: 4, m: 0, note: 'Half Day', color: '#F9E2AF' },
+      { name: 'Late', h: 7, m: 45, note: 'Late 15m', color: '#FAB387' },
+      { name: 'Absent / Off', h: 0, m: 0, note: 'Absent', color: '#F38BA8' }
     ]
   };
 
   let settings = JSON.parse(localStorage.getItem('ojt_settings') || JSON.stringify(DEFAULT_SETTINGS));
+  
+  // Migration fallback if old settings color structure exists
+  if (settings.colors) {
+    if (settings.presets && settings.presets[0]) settings.presets[0].color = settings.colors.full || '#A6E3A1';
+    if (settings.presets && settings.presets[1]) settings.presets[1].color = settings.colors.half || '#F9E2AF';
+    if (settings.presets && settings.presets[2]) settings.presets[2].color = settings.colors.late || '#FAB387';
+    if (settings.presets && settings.presets[3]) settings.presets[3].color = settings.colors.off || '#F38BA8';
+    delete settings.colors;
+  }
+
   let logs = JSON.parse(localStorage.getItem('ojt_logs') || '[]');
   let selectedLogIdx = null;
   let activeHistoryFilter = 'all';
@@ -556,12 +557,16 @@
 
   function renderPresets() {
     const container = document.getElementById('preset-buttons-container');
-    container.innerHTML = settings.presets.map((p, i) => `
-      <button class="btn" ${i === 3 ? 'style="border-color: var(--red); color: var(--red);"' : ''} 
-              onclick="setPreset(${p.h}, ${p.m}, '${p.note}')">
-        ${p.label}
-      </button>
-    `).join('');
+    container.innerHTML = settings.presets.map((p) => {
+      const fullLabel = formatPresetLabel(p.name, p.h, p.m);
+      const isRed = (p.h === 0 && p.m === 0) || p.name.toLowerCase().includes('absent') || p.name.toLowerCase().includes('off');
+      return `
+        <button class="btn" ${isRed ? 'style="border-color: var(--red); color: var(--red);"' : ''} 
+                onclick="setPreset(${p.h}, ${p.m}, '${p.note}')">
+          ${fullLabel}
+        </button>
+      `;
+    }).join('');
   }
 
   function setPreset(h, m, note) {
@@ -696,16 +701,24 @@
       `;
     }).join('');
 
+    // Flexible ETA Prediction Calculation
     document.getElementById('eta-text').innerText = remTotalMins <= 0 ? "🎉 Completed!" : calculateFlexibleETA(remTotalMins);
     
+    // Day Names Subtitle Summary
     const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const activeDaysStr = (settings.workDays || [1,2,3,4,5]).map(d => dayNames[d]).join(', ');
     document.getElementById('eta-schedule-sub').innerText = `Active Shifts: ${activeDaysStr || 'None'} (${settings.shiftHours || 8}h/day)`;
 
-    document.getElementById('leg-dot-full').style.background = settings.colors.full;
-    document.getElementById('leg-dot-half').style.background = settings.colors.half;
-    document.getElementById('leg-dot-late').style.background = settings.colors.late;
-    document.getElementById('leg-dot-off').style.background = settings.colors.off;
+    // Dynamic Legend Bar
+    const legendContainer = document.getElementById('cal-legend-container');
+    if (legendContainer) {
+      legendContainer.innerHTML = settings.presets.map(p => `
+        <div class="leg-item">
+          <div class="dot" style="background:${p.color || '#A6E3A1'};"></div>
+          <span style="color:var(--text);">${p.name || 'Shift'}</span>
+        </div>
+      `).join('');
+    }
 
     renderPresets();
   }
@@ -719,7 +732,6 @@
     document.getElementById('batch-start').valueAsDate = oneMonthAgo;
     document.getElementById('batch-end').valueAsDate = today;
 
-    // Check Multi-OJT Category Option Visibility
     document.getElementById('group-batch-category').style.display = settings.multiMode ? 'block' : 'none';
     if (settings.multiMode) {
       const sel = document.getElementById('batch-category');
@@ -934,6 +946,7 @@
     let firstDay = (d.getDay() + 6) % 7;
     let daysInMonth = new Date(currYear, currMonth + 1, 0).getDate();
 
+    // Dynamic color matching based on configured presets
     const dayMap = {};
     logs.forEach(l => {
       let dt = l.rawDate ? new Date(l.rawDate) : new Date(l.date.split(' - ')[0]);
@@ -943,15 +956,23 @@
       }
 
       if (!isNaN(dt.getTime()) && dt.getFullYear() === currYear && dt.getMonth() === currMonth) {
-        let col = settings.colors.full;
-        const descLower = l.desc.toLowerCase();
+        let col = '#A6E3A1';
         
-        if (l.mins === 0 || descLower.includes('absent') || descLower.includes('suspended') || descLower.includes('off') || descLower.includes('leave')) {
-          col = settings.colors.off;
-        } else if (l.mins <= 300) {
-          col = settings.colors.half;
-        } else if (l.mins < 480) {
-          col = settings.colors.late;
+        // Find best match preset color
+        let matchedPreset = settings.presets.find(p => p.h * 60 + p.m === l.mins);
+        if (!matchedPreset) {
+          const descLower = l.desc.toLowerCase();
+          matchedPreset = settings.presets.find(p => descLower.includes(p.name.toLowerCase()));
+        }
+        
+        if (matchedPreset && matchedPreset.color) {
+          col = matchedPreset.color;
+        } else {
+          // Fallback logic
+          if (l.mins === 0) col = (settings.presets[3] && settings.presets[3].color) || '#F38BA8';
+          else if (l.mins <= 300) col = (settings.presets[1] && settings.presets[1].color) || '#F9E2AF';
+          else if (l.mins < 480) col = (settings.presets[2] && settings.presets[2].color) || '#FAB387';
+          else col = (settings.presets[0] && settings.presets[0].color) || '#A6E3A1';
         }
         
         if (!dayMap[dt.getDate()]) dayMap[dt.getDate()] = [];
@@ -976,8 +997,13 @@
 
   function changeMonth(delta) {
     currMonth += delta;
-    if (currMonth > 11) { currMonth = 0; currYear++; }
-    if (currMonth < 0) { currMonth = 11; currYear--; }
+    if (currMonth > 12) {
+      currMonth = 1;
+      currYear++;
+    } else if (currMonth < 1) {
+      currMonth = 12;
+      currYear--;
+    }
     renderCalendar();
   }
 
@@ -1013,24 +1039,25 @@
     document.getElementById('sch-sat').checked = days.includes(6);
     document.getElementById('sch-sun').checked = days.includes(0);
 
-    document.getElementById('col-full').value = settings.colors.full;
-    document.getElementById('col-half').value = settings.colors.half;
-    document.getElementById('col-late').value = settings.colors.late;
-    document.getElementById('col-off').value = settings.colors.off;
-
     toggleMultiModeUI();
 
     const list = document.getElementById('preset-settings-list');
     list.innerHTML = settings.presets.map((p, i) => `
       <div style="background:var(--card-alt); padding:10px; border-radius:10px; margin-bottom:8px; border: 1px solid var(--border);">
-        <div class="input-group" style="margin-bottom:6px;">
-          <label>Button Label #${i+1}</label>
-          <input type="text" id="set-p-label-${i}" value="${p.label}">
+        <div class="input-row" style="margin-bottom:6px;">
+          <div class="input-group" style="flex:2;">
+            <label>Preset Name #${i+1}</label>
+            <input type="text" id="set-p-name-${i}" value="${p.name || ''}">
+          </div>
+          <div class="input-group" style="flex:1;">
+            <label>Calendar Color</label>
+            <input type="color" id="set-p-color-${i}" value="${p.color || '#A6E3A1'}">
+          </div>
         </div>
         <div class="input-row">
           <div class="input-group"><label>Hrs</label><input type="number" id="set-p-h-${i}" value="${p.h}"></div>
           <div class="input-group"><label>Mins</label><input type="number" id="set-p-m-${i}" value="${p.m}"></div>
-          <div class="input-group" style="flex:2;"><label>Note</label><input type="text" id="set-p-note-${i}" value="${p.note}"></div>
+          <div class="input-group" style="flex:2;"><label>Default Note</label><input type="text" id="set-p-note-${i}" value="${p.note}"></div>
         </div>
       </div>
     `).join('');
@@ -1054,18 +1081,12 @@
     if (document.getElementById('sch-sun').checked) activeDays.push(0);
     settings.workDays = activeDays;
 
-    settings.colors = {
-      full: document.getElementById('col-full').value,
-      half: document.getElementById('col-half').value,
-      late: document.getElementById('col-late').value,
-      off: document.getElementById('col-off').value
-    };
-
     settings.presets = settings.presets.map((_, i) => ({
-      label: document.getElementById(`set-p-label-${i}`).value,
+      name: document.getElementById(`set-p-name-${i}`).value,
       h: parseInt(document.getElementById(`set-p-h-${i}`).value) || 0,
       m: parseInt(document.getElementById(`set-p-m-${i}`).value) || 0,
-      note: document.getElementById(`set-p-note-${i}`).value
+      note: document.getElementById(`set-p-note-${i}`).value,
+      color: document.getElementById(`set-p-color-${i}`).value
     }));
 
     localStorage.setItem('ojt_settings', JSON.stringify(settings));
