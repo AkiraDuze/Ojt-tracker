@@ -174,7 +174,20 @@
 
     .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; font-size: 0.75rem; }
     .cal-day-name { font-weight: 700; color: var(--text-muted); padding-bottom: 6px; }
-    .cal-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: var(--card-alt); border-radius: 10px; font-size: 0.8rem; font-weight: 700; }
+    .cal-cell { 
+      aspect-ratio: 1; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      background: var(--card-alt); 
+      border-radius: 10px; 
+      font-size: 0.8rem; 
+      font-weight: 700; 
+      cursor: pointer; 
+      transition: transform 0.12s ease, opacity 0.15s ease;
+      user-select: none;
+    }
+    .cal-cell:active { transform: scale(0.92); opacity: 0.85; }
 
     /* Log History Items */
     .history-card { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 12px; }
@@ -571,6 +584,15 @@
   };
 
   let settings = JSON.parse(localStorage.getItem('ojt_settings') || JSON.stringify(DEFAULT_SETTINGS));
+  
+  if (settings.colors) {
+    if (settings.presets && settings.presets[0]) settings.presets[0].color = settings.colors.full || '#A6E3A1';
+    if (settings.presets && settings.presets[1]) settings.presets[1].color = settings.colors.half || '#F9E2AF';
+    if (settings.presets && settings.presets[2]) settings.presets[2].color = settings.colors.late || '#FAB387';
+    if (settings.presets && settings.presets[3]) settings.presets[3].color = settings.colors.off || '#F38BA8';
+    delete settings.colors;
+  }
+
   let logs = JSON.parse(localStorage.getItem('ojt_logs') || '[]');
   let selectedLogIdx = null;
   let activeHistoryFilter = 'all';
@@ -747,12 +769,15 @@
       `;
     }).join('');
 
+    // Flexible ETA Prediction Calculation
     document.getElementById('eta-text').innerText = remTotalMins <= 0 ? "🎉 Completed!" : calculateFlexibleETA(remTotalMins);
     
+    // Day Names Subtitle Summary
     const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const activeDaysStr = (settings.workDays || [1,2,3,4,5]).map(d => dayNames[d]).join(', ');
     document.getElementById('eta-schedule-sub').innerText = `Active Shifts: ${activeDaysStr || 'None'} (${settings.shiftHours || 8}h/day)`;
 
+    // Dynamic Legend Bar
     const legendContainer = document.getElementById('cal-legend-container');
     if (legendContainer) {
       legendContainer.innerHTML = settings.presets.map(p => `
@@ -889,6 +914,44 @@
       switchTab('tracker');
     } catch (e) {
       alert('Invalid code pasted. Make sure you copied the exact code from your phone!');
+    }
+  }
+
+  /* CALENDAR DAY DIRECT CLICK */
+  function onCalendarDayClick(day) {
+    let foundIndex = -1;
+    for (let i = 0; i < logs.length; i++) {
+      const l = logs[i];
+      let dt = l.rawDate ? new Date(l.rawDate) : new Date(l.date.split(' - ')[0]);
+      if (isNaN(dt.getTime())) {
+        const parts = l.date.split(' - ')[0].replace(',', '').split(' ');
+        if (parts.length >= 3) dt = new Date(`${parts[0]} ${parts[1]}, ${parts[2]}`);
+      }
+      if (!isNaN(dt.getTime()) && dt.getFullYear() === currYear && dt.getMonth() === currMonth && dt.getDate() === day) {
+        foundIndex = i;
+        break;
+      }
+    }
+
+    if (foundIndex !== -1) {
+      selectedLogIdx = foundIndex;
+      openDiaryModal(foundIndex);
+    } else {
+      const clickedDate = new Date(currYear, currMonth, day);
+      const dateStr = clickedDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+      const newLog = {
+        mins: (settings.shiftHours || 8) * 60,
+        desc: 'Daily Shift',
+        category: 'p1',
+        date: dateStr,
+        exactTime: '05:00 PM',
+        diary: '',
+        rawDate: clickedDate.toISOString()
+      };
+      logs.push(newLog);
+      saveData();
+      selectedLogIdx = logs.length - 1;
+      openDiaryModal(logs.length - 1);
     }
   }
 
@@ -1031,7 +1094,7 @@
           customBg = `background:${entries[0].col} !important; color:#11111b !important;`;
         }
       }
-      grid.innerHTML += `<div class="cal-cell" style="${customBg}">${day}</div>`;
+      grid.innerHTML += `<div class="cal-cell" style="${customBg}" onclick="onCalendarDayClick(${day})">${day}</div>`;
     }
   }
 
