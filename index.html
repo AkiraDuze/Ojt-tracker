@@ -495,8 +495,9 @@
     </div>
 
     <div style="display:flex; gap:8px;">
-      <button class="btn" style="flex:1;" onclick="closeDiaryModal()">Close</button>
-      <button class="btn btn-primary" style="flex:1; margin:0;" onclick="saveDiaryEntry()">Save Changes</button>
+      <button class="btn btn-danger" style="flex:0.8; padding:10px;" id="btn-modal-delete" onclick="deleteEntryFromModal()">Delete Entry</button>
+      <button class="btn" style="flex:0.8; padding:10px;" onclick="closeDiaryModal()">Close</button>
+      <button class="btn btn-primary" style="flex:1.2; margin:0; padding:10px;" onclick="saveDiaryEntry()">Save Changes</button>
     </div>
   </div>
 </div>
@@ -604,7 +605,7 @@
 
   // Autosave Draft Engine
   document.getElementById('diary-textarea').addEventListener('input', () => {
-    if (activeDiaryIdx !== null) {
+    if (activeDiaryIdx !== null && logs[activeDiaryIdx]) {
       logs[activeDiaryIdx].diaryDraft = document.getElementById('diary-textarea').innerHTML;
       localStorage.setItem('ojt_logs', JSON.stringify(logs));
       const tag = document.getElementById('draft-tag');
@@ -968,6 +969,7 @@
     document.getElementById('edit-m').value = l.mins % 60;
     document.getElementById('edit-note').value = l.desc;
     document.getElementById('diary-textarea').innerHTML = l.diaryDraft || l.diary || '';
+    document.getElementById('btn-modal-delete').style.display = 'block';
     document.getElementById('diary-modal').classList.add('active');
   }
 
@@ -975,6 +977,16 @@
     document.getElementById('diary-modal').classList.remove('active');
     activeDiaryIdx = null;
     updateUI();
+  }
+
+  function deleteEntryFromModal() {
+    if (activeDiaryIdx !== null) {
+      logs.splice(activeDiaryIdx, 1);
+      selectedLogIdx = null;
+      activeDiaryIdx = null;
+      saveData();
+      document.getElementById('diary-modal').classList.remove('active');
+    }
   }
 
   function saveDiaryEntry() {
