@@ -605,7 +605,7 @@
 
   // Autosave Draft Engine
   document.getElementById('diary-textarea').addEventListener('input', () => {
-    if (activeDiaryIdx !== null && logs[activeDiaryIdx]) {
+    if (activeDiaryIdx !== null && activeDiaryIdx !== 'new' && logs[activeDiaryIdx]) {
       logs[activeDiaryIdx].diaryDraft = document.getElementById('diary-textarea').innerHTML;
       localStorage.setItem('ojt_logs', JSON.stringify(logs));
       const tag = document.getElementById('draft-tag');
@@ -918,7 +918,9 @@
     }
   }
 
-  /* CALENDAR DAY DIRECT CLICK */
+  /* CALENDAR DAY CLICK: OPENS PREVIEW / EDITOR WITHOUT AUTO-LOGGING */
+  let pendingClickedDate = null;
+
   function onCalendarDayClick(day) {
     let foundIndex = -1;
     for (let i = 0; i < logs.length; i++) {
@@ -938,21 +940,18 @@
       selectedLogIdx = foundIndex;
       openDiaryModal(foundIndex);
     } else {
-      const clickedDate = new Date(currYear, currMonth, day);
-      const dateStr = clickedDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
-      const newLog = {
-        mins: (settings.shiftHours || 8) * 60,
-        desc: 'Daily Shift',
-        category: 'p1',
-        date: dateStr,
-        exactTime: '05:00 PM',
-        diary: '',
-        rawDate: clickedDate.toISOString()
-      };
-      logs.push(newLog);
-      saveData();
-      selectedLogIdx = logs.length - 1;
-      openDiaryModal(logs.length - 1);
+      pendingClickedDate = new Date(currYear, currMonth, day);
+      const dateStr = pendingClickedDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+      activeDiaryIdx = 'new';
+      
+      document.getElementById('diary-modal-title').innerText = 'NEW LOG & DIARY ENTRY';
+      document.getElementById('diary-modal-date').innerText = `${dateStr} (Unlogged)`;
+      document.getElementById('edit-h').value = 8;
+      document.getElementById('edit-m').value = 0;
+      document.getElementById('edit-note').value = 'Daily Shift';
+      document.getElementById('diary-textarea').innerHTML = '';
+      document.getElementById('btn-modal-delete').style.display = 'none';
+      document.getElementById('diary-modal').classList.add('active');
     }
   }
 
@@ -964,6 +963,7 @@
   function openDiaryModal(idx) {
     activeDiaryIdx = idx;
     const l = logs[idx];
+    document.getElementById('diary-modal-title').innerText = 'EDIT LOG & DIARY ENTRY';
     document.getElementById('diary-modal-date').innerText = `${l.date} (${Math.floor(l.mins/60)}h ${l.mins%60}m) - ${l.desc}`;
     document.getElementById('edit-h').value = Math.floor(l.mins / 60);
     document.getElementById('edit-m').value = l.mins % 60;
@@ -976,33 +976,47 @@
   function closeDiaryModal() {
     document.getElementById('diary-modal').classList.remove('active');
     activeDiaryIdx = null;
+    pendingClickedDate = null;
     updateUI();
   }
 
   function deleteEntryFromModal() {
-    if (activeDiaryIdx !== null) {
+    if (activeDiaryIdx !== null && activeDiaryIdx !== 'new') {
       logs.splice(activeDiaryIdx, 1);
       selectedLogIdx = null;
       activeDiaryIdx = null;
+      pendingClickedDate = null;
       saveData();
       document.getElementById('diary-modal').classList.remove('active');
     }
   }
 
   function saveDiaryEntry() {
-    if (activeDiaryIdx !== null) {
-      const editH = parseInt(document.getElementById('edit-h').value) || 0;
-      const editM = parseInt(document.getElementById('edit-m').value) || 0;
-      const editNote = document.getElementById('edit-note').value.trim() || 'Daily Shift';
+    const editH = parseInt(document.getElementById('edit-h').value) || 0;
+    const editM = parseInt(document.getElementById('edit-m').value) || 0;
+    const editNote = document.getElementById('edit-note').value.trim() || 'Daily Shift';
+    const diaryContent = document.getElementById('diary-textarea').innerHTML;
 
+    if (activeDiaryIdx === 'new' && pendingClickedDate) {
+      const dateStr = pendingClickedDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+      logs.push({
+        mins: (editH * 60) + editM,
+        desc: editNote,
+        category: 'p1',
+        date: dateStr,
+        exactTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        diary: diaryContent,
+        rawDate: pendingClickedDate.toISOString()
+      });
+    } else if (activeDiaryIdx !== null && logs[activeDiaryIdx]) {
       logs[activeDiaryIdx].mins = (editH * 60) + editM;
       logs[activeDiaryIdx].desc = editNote;
-      logs[activeDiaryIdx].diary = document.getElementById('diary-textarea').innerHTML;
+      logs[activeDiaryIdx].diary = diaryContent;
       delete logs[activeDiaryIdx].diaryDraft;
-      
-      saveData();
-      closeDiaryModal();
     }
+    
+    saveData();
+    closeDiaryModal();
   }
 
   function calculateFlexibleETA(remainingMins) {
