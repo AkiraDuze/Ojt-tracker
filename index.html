@@ -8,8 +8,8 @@
   <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
+    /* Default Theme: Midnight Slate */
     :root {
-      /* Sleek Midnight Slate Palette */
       --bg: #0b0f19;
       --card: #131b2e;
       --card-alt: #1e293b;
@@ -24,8 +24,40 @@
       --border: #334155;
     }
 
+    /* Theme: Neon Cyberpunk */
+    body[data-theme="neon"] {
+      --bg: #0a0a0c;
+      --card: #111116;
+      --card-alt: #1a1a24;
+      --text: #ffffff;
+      --text-muted: #8888a0;
+      --accent: #cba6f7;
+      --mint: #a6e3a1;
+      --yellow: #f9e2af;
+      --orange: #fab387;
+      --red: #f38ba8;
+      --blue: #89b4fa;
+      --border: #28283d;
+    }
+
+    /* Theme: Mocha Light */
+    body[data-theme="mocha"] {
+      --bg: #f4eee1;
+      --card: #ffffff;
+      --card-alt: #e8e2d5;
+      --text: #3e3328;
+      --text-muted: #8c7e6c;
+      --accent: #8b5a2b;
+      --mint: #5e8a5e;
+      --yellow: #d1a153;
+      --orange: #c77b3b;
+      --red: #b84a4a;
+      --blue: #4a7c8c;
+      --border: #d4ccbd;
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-    html, body { height: 100%; background-color: var(--bg); color: var(--text); overflow: hidden; }
+    html, body { height: 100%; background-color: var(--bg); color: var(--text); overflow: hidden; transition: background-color 0.3s, color 0.3s; }
     body { display: flex; justify-content: center; padding: 14px; }
     
     .container { 
@@ -46,7 +78,7 @@
       margin-bottom: 14px; 
       border: 1px solid var(--border); 
       flex-shrink: 0;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
     }
     .tab-btn { 
       flex: 1; 
@@ -58,9 +90,9 @@
       font-weight: 700; 
       border-radius: 10px; 
       cursor: pointer; 
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.2s;
     }
-    .tab-btn.active { background: var(--accent); color: #0b0f19; }
+    .tab-btn.active { background: var(--accent); color: var(--bg); }
 
     /* Content Views */
     .tab-content { display: none; flex: 1; flex-direction: column; overflow-y: auto; gap: 12px; padding-bottom: 8px; }
@@ -73,12 +105,12 @@
       border-radius: 18px; 
       padding: 18px; 
       text-align: center; 
-      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
     }
     .card-alt { background: var(--card-alt); }
     .card-flex { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
     
-    .title { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+    .title { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
     .big-num { font-size: 2.2rem; font-weight: 700; color: var(--accent); margin: 6px 0; }
     .eta-text { font-size: 0.9rem; font-weight: 700; color: var(--mint); margin-top: 4px; }
 
@@ -91,99 +123,55 @@
     .progress-fill { background: var(--mint); height: 100%; width: 0%; transition: width 0.4s ease; }
     .progress-sub { font-size: 0.75rem; color: var(--text-muted); }
 
-    /* Presets & Buttons */
-    .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    /* Buttons */
     .btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 12px; font-size: 0.78rem; font-weight: 700; border-radius: 12px; cursor: pointer; transition: transform 0.1s ease, opacity 0.2s; }
     .btn:active { transform: scale(0.98); opacity: 0.85; }
-    .btn-primary { background: var(--accent); color: #0b0f19; border: none; width: 100%; padding: 14px; margin-top: 12px; font-size: 0.88rem; font-weight: 700; border-radius: 12px; }
+    .btn-primary { background: var(--accent); color: var(--bg); border: none; width: 100%; padding: 14px; margin-top: 12px; font-size: 0.88rem; font-weight: 700; border-radius: 12px; }
     .btn-danger { background: var(--red); color: #fff; border: none; width: 100%; padding: 12px; font-size: 0.8rem; font-weight: 700; border-radius: 12px; }
 
     /* Form Inputs */
-    .input-row { display: flex; gap: 8px; margin-top: 8px; }
+    .input-row { display: flex; gap: 10px; margin-bottom: 12px; }
     .input-group { flex: 1; text-align: left; }
-    .input-group label { display: block; font-size: 0.65rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-    input, select, textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 10px; font-size: 0.85rem; }
-    input[type="date"] { text-align: left; color-scheme: dark; }
+    .input-group label { display: block; font-size: 0.65rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    input, select, textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 12px 14px; border-radius: 12px; font-size: 0.85rem; outline: none; transition: border-color 0.2s; }
+    input:focus, select:focus, textarea:focus, .rich-editor:focus { border-color: var(--accent); }
+    input[type="date"] { text-align: left; color-scheme: inherit; }
     input[type="color"] { height: 38px; padding: 2px; cursor: pointer; }
     
-    /* Rich Text Editor Styling */
-    .editor-toolbar {
-      display: flex;
-      gap: 4px;
-      background: var(--card-alt);
-      padding: 6px;
-      border-radius: 10px 10px 0 0;
-      border: 1px solid var(--border);
-      border-bottom: none;
-    }
-    .tool-btn {
-      background: var(--card);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 6px 10px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .tool-btn:active { background: var(--accent); color: #0b0f19; }
+    /* Preset Chips */
+    .preset-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+    .chip { background: var(--card-alt); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .chip:active { transform: scale(0.95); }
 
-    .rich-editor {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 12px;
-      border-radius: 0 0 10px 10px;
-      font-size: 0.95rem;
-      line-height: 1.6;
-      outline: none;
-      overflow-y: auto;
-      text-align: left;
-    }
-    .rich-editor:empty:before {
-      content: attr(data-placeholder);
-      color: var(--text-muted);
-    }
+    /* Rich Text Editor Styling */
+    .editor-toolbar { display: flex; gap: 4px; background: var(--card-alt); padding: 6px; border-radius: 12px 12px 0 0; border: 1px solid var(--border); border-bottom: none; }
+    .tool-btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; font-size: 0.8rem; font-weight: 700; border-radius: 8px; cursor: pointer; }
+    .tool-btn:active { background: var(--accent); color: var(--bg); }
+    .rich-editor { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 14px; border-radius: 0 0 12px 12px; font-size: 0.95rem; line-height: 1.6; outline: none; overflow-y: auto; text-align: left; }
+    .rich-editor:empty:before { content: attr(data-placeholder); color: var(--text-muted); }
     .rich-editor ul, .rich-editor ol { padding-left: 20px; }
 
-    /* Photo Upload Component */
-    .photo-preview-wrap {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 8px;
-    }
-    .photo-thumb {
-      width: 56px;
-      height: 56px;
-      object-fit: cover;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      display: none;
-    }
+    /* Multiple Photo Upload Component */
+    .photo-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    .photo-item { position: relative; width: 64px; height: 64px; }
+    .photo-thumb { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); }
+    .photo-del-btn { position: absolute; top: -6px; right: -6px; background: var(--red); color: white; border: none; width: 22px; height: 22px; border-radius: 50%; font-size: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+
+    /* File Input Button Override */
+    input[type="file"]::file-selector-button { background: var(--card-alt); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-right: 10px; transition: background 0.2s; }
+    input[type="file"]::file-selector-button:hover { background: var(--border); }
 
     /* Day Checkboxes Row */
-    .day-selector { display: flex; justify-content: space-between; gap: 4px; margin-top: 6px; }
-    .day-chip { flex: 1; text-align: center; }
-    .day-chip input { display: none; }
-    .day-chip label { 
-      display: block; 
-      padding: 8px 2px; 
-      background: var(--card-alt); 
-      border: 1px solid var(--border); 
-      border-radius: 8px; 
-      font-size: 0.68rem; 
-      font-weight: 700; 
-      color: var(--text-muted); 
-      cursor: pointer; 
-    }
-    .day-chip input:checked + label { background: var(--accent); color: #0b0f19; border-color: var(--accent); }
+    .day-selector { display: flex; justify-content: space-between; gap: 4px; }
+    .day-chip-box { flex: 1; text-align: center; }
+    .day-chip-box input { display: none; }
+    .day-chip-box label { display: block; padding: 10px 2px; background: var(--card-alt); border: 1px solid var(--border); border-radius: 10px; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); cursor: pointer; }
+    .day-chip-box input:checked + label { background: var(--accent); color: var(--bg); border-color: var(--accent); }
 
     /* Segmented Filters */
     .filter-bar { display: flex; gap: 4px; background: var(--card-alt); padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
     .filter-btn { flex: 1; background: transparent; border: none; color: var(--text-muted); padding: 7px; font-size: 0.7rem; font-weight: 700; border-radius: 8px; cursor: pointer; }
-    .filter-btn.active { background: var(--accent); color: #0b0f19; }
+    .filter-btn.active { background: var(--accent); color: var(--bg); }
 
     /* Calendar Grid */
     .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
@@ -193,41 +181,19 @@
 
     .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; font-size: 0.75rem; }
     .cal-day-name { font-weight: 700; color: var(--text-muted); padding-bottom: 6px; }
-    .cal-cell { 
-      aspect-ratio: 1; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      background: var(--card-alt); 
-      border-radius: 10px; 
-      font-size: 0.8rem; 
-      font-weight: 700; 
-      cursor: pointer; 
-      transition: transform 0.12s ease, opacity 0.15s ease;
-      user-select: none;
-    }
+    .cal-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: var(--card-alt); border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: transform 0.12s ease, opacity 0.15s ease; user-select: none; }
     .cal-cell:active { transform: scale(0.92); opacity: 0.85; }
 
     /* Log History Items */
     .history-card { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 12px; }
     .log-list { flex: 1; overflow-y: auto; text-align: left; display: flex; flex-direction: column; gap: 8px; }
-    .log-item { 
-      background: var(--card-alt); 
-      border-radius: 12px; 
-      padding: 12px 14px; 
-      border: 1px solid var(--border); 
-      cursor: pointer; 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      transition: border-color 0.2s ease;
-    }
-    .log-item.selected { border-color: var(--accent); background: #24324d; }
+    .log-item { background: var(--card-alt); border-radius: 12px; padding: 12px 14px; border: 1px solid var(--border); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: border-color 0.2s ease; }
+    .log-item.selected { border-color: var(--accent); background: var(--card); }
     .log-info-main { font-weight: 700; font-size: 0.82rem; }
     .log-info-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 3px; }
     .badge { font-size: 0.62rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-    .badge-draft { background: var(--yellow); color: #0b0f19; }
-    .badge-saved { background: var(--mint); color: #0b0f19; }
+    .badge-draft { background: var(--yellow); color: var(--bg); }
+    .badge-saved { background: var(--mint); color: var(--bg); }
 
     /* Settings Sections */
     .settings-card { text-align: left; padding: 16px; }
@@ -239,40 +205,18 @@
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--card-alt); transition: .2s; border-radius: 20px; border: 1px solid var(--border); }
     .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 2px; bottom: 2px; background-color: var(--text-muted); transition: .2s; border-radius: 50%; }
     input:checked + .slider { background-color: var(--accent); }
-    input:checked + .slider:before { transform: translateX(18px); background-color: #0b0f19; }
+    input:checked + .slider:before { transform: translateX(18px); background-color: var(--bg); }
 
     /* Full Screen Modal */
-    .modal-overlay { 
-      display: none; 
-      position: fixed; 
-      top: 0; left: 0; width: 100%; height: 100%; 
-      background: rgba(0,0,0,0.85); 
-      backdrop-filter: blur(10px); 
-      z-index: 100; 
-      justify-content: center; 
-      align-items: center; 
-      padding: 16px; 
-    }
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 100; justify-content: center; align-items: center; padding: 16px; }
     .modal-overlay.active { display: flex; }
-    .modal-box { 
-      background: var(--card); 
-      border: 1px solid var(--border); 
-      border-radius: 22px; 
-      width: 100%; 
-      max-width: 400px; 
-      max-height: 90%; 
-      display: flex; 
-      flex-direction: column; 
-      padding: 18px; 
-      box-shadow: 0 12px 35px rgba(0,0,0,0.6); 
-      overflow-y: auto;
-    }
+    .modal-box { background: var(--card); border: 1px solid var(--border); border-radius: 22px; width: 100%; max-width: 400px; max-height: 90%; display: flex; flex-direction: column; padding: 18px; box-shadow: 0 12px 35px rgba(0,0,0,0.6); overflow-y: auto; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .draft-tag { font-size: 0.68rem; color: var(--mint); font-weight: 700; opacity: 0; transition: opacity 0.3s; }
     .draft-tag.visible { opacity: 1; }
   </style>
 </head>
-<body>
+<body data-theme="slate">
 
 <div class="container">
   <div class="tabs">
@@ -312,23 +256,21 @@
     </div>
   </div>
 
-  <!-- LOG TIME TAB -->
+  <!-- LOG TIME TAB (REDESIGNED) -->
   <div id="tab-log" class="tab-content">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <div class="title">QUICK PRESETS</div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: -4px;">
+      <div class="title" style="margin: 0;">LOG ENTRY</div>
       <button class="btn" style="padding:4px 10px; font-size:0.68rem; border-color:var(--accent); color:var(--accent);" onclick="openBatchModal()">⚡ Batch Populate</button>
     </div>
-
-    <div class="preset-grid" id="preset-buttons-container"></div>
     
-    <div class="card card-flex">
+    <div class="card card-flex" style="text-align: left;">
       <div>
-        <div class="input-row" style="margin-bottom: 10px;">
-          <div class="input-group" style="flex:2;">
-            <label>Log Date</label>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Date</label>
             <input type="date" id="inp-date">
           </div>
-          <div class="input-group" id="group-category" style="flex:2; display: none;">
+          <div class="input-group" id="group-category" style="display: none;">
             <label>Target OJT</label>
             <select id="inp-category">
               <option value="p1">Primary OJT</option>
@@ -336,30 +278,34 @@
             </select>
           </div>
         </div>
-        <div class="input-row" style="margin-bottom: 10px;">
-          <div class="input-group"><label>Hours</label><input type="number" id="inp-h" value="8"></div>
-          <div class="input-group"><label>Mins</label><input type="number" id="inp-m" value="0"></div>
-          <div class="input-group" style="flex:2;"><label>Summary Note</label><input type="text" id="inp-note" value="Daily Shift"></div>
+
+        <label style="display: block; font-size: 0.65rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 700; text-transform: uppercase;">Quick Presets</label>
+        <div class="preset-chips" id="preset-buttons-container"></div>
+
+        <div class="input-row">
+          <div class="input-group" style="flex: 0.6;"><label>Hrs</label><input type="number" id="inp-h" value="8"></div>
+          <div class="input-group" style="flex: 0.6;"><label>Mins</label><input type="number" id="inp-m" value="0"></div>
+          <div class="input-group" style="flex: 2;"><label>Note</label><input type="text" id="inp-note" value="Daily Shift"></div>
         </div>
-        <div class="input-group">
-          <label>Optional Diary / Task Notes</label>
+
+        <div class="input-group" style="margin-top: 6px;">
+          <label>Diary / Tasks Completed</label>
           <div class="editor-toolbar">
             <button class="tool-btn" onclick="execCmd('bold')"><b>B</b></button>
             <button class="tool-btn" onclick="execCmd('italic')"><i>I</i></button>
             <button class="tool-btn" onclick="execCmd('underline')"><u>U</u></button>
             <button class="tool-btn" onclick="execCmd('insertUnorderedList')">• List</button>
           </div>
-          <div class="rich-editor" id="inp-diary-direct" contenteditable="true" style="height: 90px;" data-placeholder="Write tasks, challenges, or reflections..."></div>
+          <div class="rich-editor" id="inp-diary-direct" contenteditable="true" style="height: 120px;" data-placeholder="What did you accomplish today?"></div>
         </div>
-        <div class="input-group" style="margin-top: 8px;">
-          <label>Attach Photo (Optional)</label>
-          <div class="photo-preview-wrap">
-            <input type="file" id="inp-photo" accept="image/*" onchange="previewSelectedPhoto(this, 'inp-photo-thumb')">
-            <img id="inp-photo-thumb" class="photo-thumb" alt="Preview">
-          </div>
+
+        <div class="input-group" style="margin-top: 14px;">
+          <label>Attach Photos</label>
+          <input type="file" id="inp-photo" accept="image/*" multiple onchange="handleMultiplePhotos(this, 'inp-photo-grid')">
+          <div class="photo-grid" id="inp-photo-grid"></div>
         </div>
       </div>
-      <button class="btn btn-primary" onclick="addLog()">+ Log Worked Hours</button>
+      <button class="btn btn-primary" style="margin-top: 20px;" onclick="addLog()">+ Log Worked Hours</button>
     </div>
   </div>
 
@@ -369,12 +315,11 @@
       <div>
         <div class="cal-header">
           <button class="btn" style="padding: 6px 14px;" onclick="changeMonth(-1)">‹</button>
-          <div class="title" id="cal-month-title" style="font-size: 0.88rem;">Month Year</div>
+          <div class="title" id="cal-month-title" style="font-size: 0.88rem; margin:0;">Month Year</div>
           <button class="btn" style="padding: 6px 14px;" onclick="changeMonth(1)">›</button>
         </div>
 
         <div class="cal-legend" id="cal-legend-container"></div>
-
         <div class="cal-grid" id="cal-grid"></div>
       </div>
     </div>
@@ -397,13 +342,13 @@
     </div>
   </div>
 
-  <!-- SETTINGS TAB -->
+  <!-- SETTINGS TAB (REORGANIZED) -->
   <div id="tab-settings" class="tab-content">
     
-    <!-- Supabase Cloud Sync Card -->
+    <!-- 1. Cloud Sync -->
     <div class="card settings-card">
-      <h4>☁️ Cloud Account Sync</h4>
-      <p style="font-size:0.68rem; color:var(--text-muted); margin-bottom:10px;">Sign in with Google to automatically sync and access your logs anywhere, with no setup required for your friends.</p>
+      <h4>☁️ Account & Sync</h4>
+      <p style="font-size:0.68rem; color:var(--text-muted); margin-bottom:10px;">Sign in with Google to automatically back up your data to the cloud.</p>
       
       <button class="btn btn-primary" style="margin-top:0; background:#fff; color:#111; display:flex; align-items:center; justify-content:center; gap:8px;" id="btn-cloud-auth" onclick="handleAuthClick()">
         <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
@@ -416,31 +361,22 @@
       </div>
     </div>
 
-    <!-- Schedule Predictor Settings Card -->
+    <!-- 2. Appearance -->
     <div class="card settings-card">
-      <h4>📅 Flexible Prediction Schedule</h4>
-      <p style="font-size:0.65rem; color:var(--text-muted); margin-bottom:8px;">Select which days you are available to attend OJT.</p>
-      
-      <div class="day-selector">
-        <div class="day-chip"><input type="checkbox" id="sch-mon" checked><label for="sch-mon">M</label></div>
-        <div class="day-chip"><input type="checkbox" id="sch-tue" checked><label for="sch-tue">T</label></div>
-        <div class="day-chip"><input type="checkbox" id="sch-wed" checked><label for="sch-wed">W</label></div>
-        <div class="day-chip"><input type="checkbox" id="sch-thu" checked><label for="sch-thu">T</label></div>
-        <div class="day-chip"><input type="checkbox" id="sch-fri" checked><label for="sch-fri">F</label></div>
-        <div class="day-chip"><input type="checkbox" id="sch-sat"><label for="sch-sat">S</label></div>
-        <div class="day-chip"><input type="checkbox" id="sch-sun"><label for="sch-sun">S</label></div>
-      </div>
-
-      <div class="input-row" style="margin-top:10px;">
-        <div class="input-group">
-          <label>Estimated Hours / Shift</label>
-          <input type="number" id="set-shift-hours" value="8">
-        </div>
+      <h4>🎨 Appearance</h4>
+      <div class="input-group">
+        <label>Color Theme</label>
+        <select id="set-theme" onchange="previewTheme()">
+          <option value="slate">Midnight Slate (Modern Dark)</option>
+          <option value="neon">Neon Cyberpunk (High Contrast)</option>
+          <option value="mocha">Mocha Light (Clean Bright)</option>
+        </select>
       </div>
     </div>
 
+    <!-- 3. Tracker Rules -->
     <div class="card settings-card">
-      <h4>⚙️ Tracker Mode</h4>
+      <h4>🎯 Tracker Rules</h4>
       <div class="toggle-row">
         <label for="set-multi-mode">Multi-OJT Tracker Mode</label>
         <label class="switch">
@@ -448,42 +384,49 @@
           <span class="slider"></span>
         </label>
       </div>
-      <p style="font-size:0.65rem; color:var(--text-muted);">Enable if running two separate OJT programs simultaneously.</p>
-    </div>
-
-    <div class="card settings-card">
-      <h4>🎯 Target Goal Hours</h4>
-      <div class="input-row">
+      
+      <div class="input-row" style="margin-top: 10px;">
         <div class="input-group">
-          <label id="lbl-target-p1">Primary OJT Goal (Hours)</label>
+          <label id="lbl-target-p1">Goal Hours</label>
           <input type="number" id="set-target-p1" value="360">
         </div>
         <div class="input-group" id="group-target-p2" style="display:none;">
-          <label id="lbl-target-p2">Secondary OJT Goal (Hours)</label>
+          <label id="lbl-target-p2">Secondary Goal</label>
           <input type="number" id="set-target-p2" value="40">
         </div>
       </div>
-    </div>
 
-    <div class="card settings-card" id="card-labels-settings" style="display:none;">
-      <h4>🏷️ Custom Labels</h4>
-      <div class="input-row">
-        <div class="input-group">
-          <label>OJT 1 Name</label>
-          <input type="text" id="set-name-p1" value="OJT 1">
-        </div>
-        <div class="input-group">
-          <label>OJT 2 Name</label>
-          <input type="text" id="set-name-p2" value="OJT 2">
-        </div>
+      <div class="input-row" id="card-labels-settings" style="display:none;">
+        <div class="input-group"><label>OJT 1 Name</label><input type="text" id="set-name-p1" value="OJT 1"></div>
+        <div class="input-group"><label>OJT 2 Name</label><input type="text" id="set-name-p2" value="OJT 2"></div>
       </div>
     </div>
 
-    <!-- Dynamic Category Presets Card -->
+    <!-- 4. Schedule -->
     <div class="card settings-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <h4>⚡ Shift Categories & Colors</h4>
-        <button class="btn" style="padding: 4px 10px; font-size: 0.68rem; border-color: var(--mint); color: var(--mint);" onclick="addNewPreset()">+ Add Category</button>
+      <h4>📅 Standard Schedule</h4>
+      <p style="font-size:0.65rem; color:var(--text-muted); margin-bottom:8px;">Used to predict completion dates.</p>
+      
+      <div class="day-selector">
+        <div class="day-chip-box"><input type="checkbox" id="sch-mon" checked><label for="sch-mon">M</label></div>
+        <div class="day-chip-box"><input type="checkbox" id="sch-tue" checked><label for="sch-tue">T</label></div>
+        <div class="day-chip-box"><input type="checkbox" id="sch-wed" checked><label for="sch-wed">W</label></div>
+        <div class="day-chip-box"><input type="checkbox" id="sch-thu" checked><label for="sch-thu">T</label></div>
+        <div class="day-chip-box"><input type="checkbox" id="sch-fri" checked><label for="sch-fri">F</label></div>
+        <div class="day-chip-box"><input type="checkbox" id="sch-sat"><label for="sch-sat">S</label></div>
+        <div class="day-chip-box"><input type="checkbox" id="sch-sun"><label for="sch-sun">S</label></div>
+      </div>
+      <div class="input-group" style="margin-top:10px;">
+        <label>Expected Daily Hours</label>
+        <input type="number" id="set-shift-hours" value="8">
+      </div>
+    </div>
+
+    <!-- 5. Categories -->
+    <div class="card settings-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h4 style="margin:0; border:none;">⚡ Custom Categories</h4>
+        <button class="btn" style="padding: 4px 10px; font-size: 0.68rem; border-color: var(--mint); color: var(--mint);" onclick="addNewPreset()">+ Add</button>
       </div>
       <div id="preset-settings-list"></div>
     </div>
@@ -497,43 +440,39 @@
   <div class="modal-box">
     <div class="modal-header">
       <div>
-        <div class="title" id="diary-modal-title">EDIT LOG & DIARY ENTRY</div>
+        <div class="title" id="diary-modal-title" style="margin:0;">EDIT LOG & DIARY</div>
         <div style="font-size:0.78rem; font-weight:700; color:var(--text); margin-top: 2px;" id="diary-modal-date">Date</div>
       </div>
       <span class="draft-tag" id="draft-tag">✓ Saved</span>
     </div>
 
-    <div class="input-row" style="margin-bottom:8px;">
-      <div class="input-group"><label>Hours</label><input type="number" id="edit-h"></div>
-      <div class="input-group"><label>Mins</label><input type="number" id="edit-m"></div>
+    <div class="input-row">
+      <div class="input-group" style="flex:0.6;"><label>Hrs</label><input type="number" id="edit-h"></div>
+      <div class="input-group" style="flex:0.6;"><label>Mins</label><input type="number" id="edit-m"></div>
       <div class="input-group" style="flex:2;"><label>Note</label><input type="text" id="edit-note"></div>
     </div>
 
     <div class="input-group" style="flex:1; display:flex; flex-direction:column; margin-bottom:12px;">
-      <label>Diary / Weekly Report</label>
+      <label>Diary / Completed Tasks</label>
       <div class="editor-toolbar">
         <button class="tool-btn" onclick="execCmd('bold')"><b>B</b></button>
         <button class="tool-btn" onclick="execCmd('italic')"><i>I</i></button>
         <button class="tool-btn" onclick="execCmd('underline')"><u>U</u></button>
         <button class="tool-btn" onclick="execCmd('insertUnorderedList')">• List</button>
-        <button class="tool-btn" onclick="execCmd('insertOrderedList')">1. List</button>
       </div>
-      <div class="rich-editor" id="diary-textarea" contenteditable="true" style="flex:1;" data-placeholder="Write detailed notes on your tasks, progress, or reflections..."></div>
+      <div class="rich-editor" id="diary-textarea" contenteditable="true" style="flex:1; min-height: 100px;" data-placeholder="Write notes here..."></div>
     </div>
 
-    <div class="input-group" style="margin-bottom: 12px;">
-      <label>Attached Photo</label>
-      <div class="photo-preview-wrap">
-        <input type="file" id="edit-photo" accept="image/*" onchange="previewSelectedPhoto(this, 'edit-photo-thumb')">
-        <img id="edit-photo-thumb" class="photo-thumb" alt="Attached Preview">
-        <button class="btn" type="button" style="padding: 4px 8px; font-size: 0.65rem;" onclick="removeAttachedPhoto()">Remove Photo</button>
-      </div>
+    <div class="input-group" style="margin-bottom: 16px;">
+      <label>Attached Photos</label>
+      <input type="file" id="edit-photo" accept="image/*" multiple onchange="handleMultiplePhotos(this, 'edit-photo-grid')">
+      <div class="photo-grid" id="edit-photo-grid"></div>
     </div>
 
     <div style="display:flex; gap:8px;">
-      <button class="btn btn-danger" style="flex:0.8; padding:10px;" id="btn-modal-delete" onclick="deleteEntryFromModal()">Delete Entry</button>
-      <button class="btn" style="flex:0.8; padding:10px;" onclick="closeDiaryModal()">Close</button>
-      <button class="btn btn-primary" style="flex:1.2; margin:0; padding:10px;" onclick="saveDiaryEntry()">Save Changes</button>
+      <button class="btn btn-danger" style="flex:0.8; padding:12px;" id="btn-modal-delete" onclick="deleteEntryFromModal()">Delete</button>
+      <button class="btn" style="flex:0.8; padding:12px;" onclick="closeDiaryModal()">Close</button>
+      <button class="btn btn-primary" style="flex:1.2; margin:0; padding:12px;" onclick="saveDiaryEntry()">Save Changes</button>
     </div>
   </div>
 </div>
@@ -542,170 +481,121 @@
 <div class="modal-overlay" id="batch-modal">
   <div class="modal-box" style="height:auto; max-height:85%;">
     <div class="modal-header">
-      <div class="title">⚡ BATCH POPULATE LOGS</div>
+      <div class="title" style="margin:0;">⚡ BATCH POPULATE LOGS</div>
       <button class="btn" style="padding:2px 8px; font-size:0.7rem;" onclick="closeBatchModal()">✕</button>
     </div>
-
-    <p style="font-size:0.68rem; color:var(--text-muted); margin-bottom:10px;">Fill past logs automatically across a date range. You can re-edit any specific day later!</p>
-
-    <div class="input-row" style="margin-bottom:8px;">
-      <div class="input-group"><label>Start Date</label><input type="date" id="batch-start"></div>
-      <div class="input-group"><label>End Date</label><input type="date" id="batch-end"></div>
-    </div>
-
+    <p style="font-size:0.68rem; color:var(--text-muted); margin-bottom:10px;">Fill past logs automatically. You can edit any day later!</p>
+    <div class="input-row"><div class="input-group"><label>Start Date</label><input type="date" id="batch-start"></div><div class="input-group"><label>End Date</label><input type="date" id="batch-end"></div></div>
     <div class="input-group" style="margin-bottom:8px;">
       <label>Include Days of Week</label>
       <div class="day-selector">
-        <div class="day-chip"><input type="checkbox" id="b-mon" checked><label for="b-mon">M</label></div>
-        <div class="day-chip"><input type="checkbox" id="b-tue" checked><label for="b-tue">T</label></div>
-        <div class="day-chip"><input type="checkbox" id="b-wed" checked><label for="b-wed">W</label></div>
-        <div class="day-chip"><input type="checkbox" id="b-thu" checked><label for="b-thu">T</label></div>
-        <div class="day-chip"><input type="checkbox" id="b-fri" checked><label for="b-fri">F</label></div>
-        <div class="day-chip"><input type="checkbox" id="b-sat"><label for="b-sat">S</label></div>
-        <div class="day-chip"><input type="checkbox" id="b-sun"><label for="b-sun">S</label></div>
+        <div class="day-chip-box"><input type="checkbox" id="b-mon" checked><label for="b-mon">M</label></div>
+        <div class="day-chip-box"><input type="checkbox" id="b-tue" checked><label for="b-tue">T</label></div>
+        <div class="day-chip-box"><input type="checkbox" id="b-wed" checked><label for="b-wed">W</label></div>
+        <div class="day-chip-box"><input type="checkbox" id="b-thu" checked><label for="b-thu">T</label></div>
+        <div class="day-chip-box"><input type="checkbox" id="b-fri" checked><label for="b-fri">F</label></div>
+        <div class="day-chip-box"><input type="checkbox" id="b-sat"><label for="b-sat">S</label></div>
+        <div class="day-chip-box"><input type="checkbox" id="b-sun"><label for="b-sun">S</label></div>
       </div>
     </div>
-
-    <div class="input-row" style="margin-bottom:8px;">
-      <div class="input-group"><label>Shift Hours</label><input type="number" id="batch-h" value="8"></div>
-      <div class="input-group"><label>Shift Mins</label><input type="number" id="batch-m" value="0"></div>
-    </div>
-
-    <div class="input-group" style="margin-bottom:12px;">
-      <label>Summary Note</label>
-      <input type="text" id="batch-note" value="Daily Shift">
-    </div>
-
-    <div class="input-group" id="group-batch-category" style="margin-bottom:12px; display:none;">
-      <label>Assign To Target OJT</label>
-      <select id="batch-category">
-        <option value="p1">Primary OJT</option>
-        <option value="p2">Secondary OJT</option>
-      </select>
-    </div>
-
+    <div class="input-row"><div class="input-group"><label>Hours</label><input type="number" id="batch-h" value="8"></div><div class="input-group"><label>Mins</label><input type="number" id="batch-m" value="0"></div></div>
+    <div class="input-group" style="margin-bottom:12px;"><label>Summary Note</label><input type="text" id="batch-note" value="Daily Shift"></div>
+    <div class="input-group" id="group-batch-category" style="margin-bottom:12px; display:none;"><label>Target OJT</label><select id="batch-category"><option value="p1">Primary</option><option value="p2">Secondary</option></select></div>
     <button class="btn btn-primary" onclick="generateBatchLogs()">Generate Batch Logs</button>
   </div>
 </div>
 
 <script>
-  /* -------------------------------------------------------------
-     SUPABASE CREDENTIALS (WIRED UP)
-     ------------------------------------------------------------- */
   const SUPABASE_URL = 'https://thnxqiphtgorrclmyspd.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_Rmeqsy7ha3ceKg6UgcAFPg_itNpTwdy';
-
   let sb = null;
   let currentUser = null;
-  if (SUPABASE_URL && SUPABASE_ANON_KEY) {
-    sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  }
+  if (SUPABASE_URL && SUPABASE_ANON_KEY) sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  function execCmd(cmd) {
-    document.execCommand(cmd, false, null);
-  }
-
-  function formatPresetLabel(name, h, m) {
-    if (!name || name.trim() === '') name = 'Shift';
-    let duration = '';
-    if (h > 0 && m > 0) duration = `${h}h ${m}m`;
-    else if (h > 0) duration = `${h}h`;
-    else if (m > 0) duration = `${m}m`;
-    else duration = `0h`;
-
-    return `${name.trim()} (${duration})`;
-  }
+  function execCmd(cmd) { document.execCommand(cmd, false, null); }
+  function formatPresetLabel(name, h, m) { return `${name.trim()} (${h > 0 ? h+'h' : ''} ${m > 0 ? m+'m' : ''})`.replace(' ()', ''); }
 
   const DEFAULT_SETTINGS = {
+    theme: 'slate',
     multiMode: false,
-    targetP1: 480,
-    targetP2: 40,
-    nameP1: 'OJT 1',
-    nameP2: 'OJT 2',
-    workDays: [1, 2, 3, 4, 5],
-    shiftHours: 8,
+    targetP1: 480, targetP2: 40,
+    nameP1: 'OJT 1', nameP2: 'OJT 2',
+    workDays: [1, 2, 3, 4, 5], shiftHours: 8,
     presets: [
       { name: 'Full Day', h: 8, m: 0, note: 'Daily Shift', color: '#2dd4bf' },
       { name: 'Half Day', h: 4, m: 0, note: 'Half Day', color: '#fcd34d' },
       { name: 'Late', h: 7, m: 45, note: 'Late 15m', color: '#fb923c' },
-      { name: 'Absent / Off', h: 0, m: 0, note: 'Absent', color: '#f43f5e' },
-      { name: 'Overtime', h: 10, m: 0, note: 'Extended Shift', color: '#818cf8' },
-      { name: 'Remote / WFH', h: 8, m: 0, note: 'Work From Home', color: '#38bdf8' }
+      { name: 'Absent', h: 0, m: 0, note: 'Absent', color: '#f43f5e' }
     ]
   };
 
   let settings = JSON.parse(localStorage.getItem('ojt_settings') || JSON.stringify(DEFAULT_SETTINGS));
+  if (!settings.theme) settings.theme = 'slate';
+  document.body.setAttribute('data-theme', settings.theme);
+
   let logs = JSON.parse(localStorage.getItem('ojt_logs') || '[]');
   let selectedLogIdx = null;
   let activeHistoryFilter = 'all';
   let activeDiaryIdx = null;
   let pendingClickedDate = null;
-  let activePhotoBase64 = null;
+  let activePhotosBase64 = []; // Supports Multiple Photos
   let currYear = new Date().getFullYear();
   let currMonth = new Date().getMonth();
 
-  /* PHOTO HELPER FUNCTIONS */
-  function previewSelectedPhoto(inputElem, thumbId) {
-    const file = inputElem.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const maxDim = 800;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height && width > maxDim) {
-          height = Math.round((height * maxDim) / width);
-          width = maxDim;
-        } else if (height > maxDim) {
-          width = Math.round((width * maxDim) / height);
-          height = maxDim;
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-
-        activePhotoBase64 = canvas.toDataURL('image/jpeg', 0.7);
-        const thumb = document.getElementById(thumbId);
-        if (thumb) {
-          thumb.src = activePhotoBase64;
-          thumb.style.display = 'block';
-        }
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function removeAttachedPhoto() {
-    activePhotoBase64 = null;
-    const thumb = document.getElementById('edit-photo-thumb');
-    if (thumb) {
-      thumb.src = '';
-      thumb.style.display = 'none';
+  /* MULTIPLE PHOTOS LOGIC */
+  async function handleMultiplePhotos(inputElem, gridId) {
+    for (let file of inputElem.files) {
+      const b64 = await resizeImage(file);
+      activePhotosBase64.push(b64);
     }
-    const input = document.getElementById('edit-photo');
-    if (input) input.value = '';
+    renderPhotoGrid(gridId);
+    inputElem.value = ""; 
   }
 
-  /* SUPABASE AUTHENTICATION & SYNC */
-  async function initAuth() {
-    if (!sb) return;
+  function removePhoto(idx, gridId) {
+    activePhotosBase64.splice(idx, 1);
+    renderPhotoGrid(gridId);
+  }
 
-    const { data: { session } } = await sb.auth.getSession();
-    handleSession(session);
+  function renderPhotoGrid(gridId) {
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = activePhotosBase64.map((b64, i) => `
+      <div class="photo-item">
+        <img src="${b64}" class="photo-thumb">
+        <button class="photo-del-btn" onclick="removePhoto(${i}, '${gridId}')">✕</button>
+      </div>
+    `).join('');
+  }
 
-    sb.auth.onAuthStateChange((_event, session) => {
-      handleSession(session);
+  function resizeImage(file) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxDim = 600; // Heavily compressed to save localStorage space
+          let width = img.width, height = img.height;
+          if (width > height && width > maxDim) { height = Math.round((height * maxDim) / width); width = maxDim; } 
+          else if (height > maxDim) { width = Math.round((width * maxDim) / height); height = maxDim; }
+          canvas.width = width; canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.6));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
     });
   }
 
+  /* AUTHENTICATION */
+  async function initAuth() {
+    if (!sb) return;
+    const { data: { session } } = await sb.auth.getSession();
+    handleSession(session);
+    sb.auth.onAuthStateChange((_event, session) => handleSession(session));
+  }
   function handleSession(session) {
     if (session && session.user) {
       currentUser = session.user;
@@ -718,84 +608,35 @@
       document.getElementById('cloud-sync-status').innerText = 'Saved locally';
     }
   }
-
   async function handleAuthClick() {
-    if (!sb) {
-      alert('Supabase client failed to initialize. Check console.');
-      return;
-    }
-    if (currentUser) {
-      await sb.auth.signOut();
-      return;
-    }
-    await sb.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin + window.location.pathname
-      }
-    });
+    if (!sb) return;
+    if (currentUser) { await sb.auth.signOut(); return; }
+    await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + window.location.pathname }});
   }
-
   async function pullFromCloud() {
     if (!sb || !currentUser) return;
     try {
-      const { data } = await sb
-        .from('user_ojt_data')
-        .select('data')
-        .eq('user_id', currentUser.id)
-        .single();
-
+      const { data } = await sb.from('user_ojt_data').select('data').eq('user_id', currentUser.id).single();
       if (data && data.data) {
-        const cloudData = data.data;
-        if (cloudData.logs && cloudData.logs.length >= logs.length) {
-          logs = cloudData.logs;
-          localStorage.setItem('ojt_logs', JSON.stringify(logs));
-        }
-        if (cloudData.settings) {
-          settings = cloudData.settings;
-          localStorage.setItem('ojt_settings', JSON.stringify(settings));
-        }
+        if (data.data.logs && data.data.logs.length >= logs.length) { logs = data.data.logs; localStorage.setItem('ojt_logs', JSON.stringify(logs)); }
+        if (data.data.settings) { settings = data.data.settings; localStorage.setItem('ojt_settings', JSON.stringify(settings)); document.body.setAttribute('data-theme', settings.theme || 'slate');}
         updateUI();
       }
-    } catch (e) {
-      console.warn('Initial cloud pull skipped/empty');
-    }
+    } catch (e) {}
   }
-
   async function syncWithCloud() {
-    if (!sb || !currentUser) {
-      handleAuthClick();
-      return;
-    }
-
+    if (!sb || !currentUser) return handleAuthClick();
     document.getElementById('cloud-sync-status').innerText = 'Syncing...';
-
-    const payload = { logs, settings, lastUpdated: new Date().toISOString() };
-    const { error } = await sb
-      .from('user_ojt_data')
-      .upsert({
-        user_id: currentUser.id,
-        data: payload,
-        updated_at: new Date().toISOString()
-      });
-
-    if (!error) {
-      document.getElementById('cloud-sync-status').innerText = `Synced ✓ (${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})})`;
-    } else {
-      document.getElementById('cloud-sync-status').innerText = 'Sync error';
-    }
+    const { error } = await sb.from('user_ojt_data').upsert({ user_id: currentUser.id, data: { logs, settings, lastUpdated: new Date().toISOString() }, updated_at: new Date().toISOString() });
+    if (!error) document.getElementById('cloud-sync-status').innerText = `Synced ✓ (${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})})`;
   }
 
   document.getElementById('inp-date').valueAsDate = new Date();
-
-  // Autosave Draft
   document.getElementById('diary-textarea').addEventListener('input', () => {
     if (activeDiaryIdx !== null && activeDiaryIdx !== 'new' && logs[activeDiaryIdx]) {
       logs[activeDiaryIdx].diaryDraft = document.getElementById('diary-textarea').innerHTML;
       localStorage.setItem('ojt_logs', JSON.stringify(logs));
-      const tag = document.getElementById('draft-tag');
-      tag.classList.add('visible');
-      setTimeout(() => tag.classList.remove('visible'), 1200);
+      const tag = document.getElementById('draft-tag'); tag.classList.add('visible'); setTimeout(() => tag.classList.remove('visible'), 1200);
     }
   });
 
@@ -804,22 +645,16 @@
     document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', tabs[i] === name));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.getElementById(`tab-${name}`).classList.add('active');
-    
     if (name === 'calendar') renderCalendar();
     if (name === 'settings') loadSettingsForm();
+    if (name === 'log') { activePhotosBase64 = []; renderPhotoGrid('inp-photo-grid'); }
   }
 
   function renderPresets() {
     const container = document.getElementById('preset-buttons-container');
     container.innerHTML = settings.presets.map((p) => {
       const fullLabel = formatPresetLabel(p.name, p.h, p.m);
-      const isRed = (p.h === 0 && p.m === 0) || p.name.toLowerCase().includes('absent') || p.name.toLowerCase().includes('off');
-      return `
-        <button class="btn" ${isRed ? 'style="border-color: var(--red); color: var(--red);"' : ''} 
-                onclick="setPreset(${p.h}, ${p.m}, '${p.note}')">
-          ${fullLabel}
-        </button>
-      `;
+      return `<div class="chip" style="border-color:${p.color}; color:${p.color};" onclick="setPreset(${p.h}, ${p.m}, '${p.note}')">${fullLabel}</div>`;
     }).join('');
   }
 
@@ -830,79 +665,51 @@
   }
 
   function addLog() {
-    const h = parseInt(document.getElementById('inp-h').value) || 0;
-    const m = parseInt(document.getElementById('inp-m').value) || 0;
-    const note = document.getElementById('inp-note').value.trim() || 'Daily Shift';
-    const directDiary = document.getElementById('inp-diary-direct').innerHTML.trim();
-    const cat = settings.multiMode ? document.getElementById('inp-category').value : 'p1';
-    
     const dateVal = document.getElementById('inp-date').value;
-    let chosenDate = new Date();
-    if (dateVal) {
-      const parts = dateVal.split('-');
-      chosenDate = new Date(parts[0], parts[1] - 1, parts[2]);
+    const parts = dateVal.split('-');
+    const chosenDate = new Date(parts[0], parts[1] - 1, parts[2]);
+    const dateStr = chosenDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+
+    // Prevent Duplicates
+    if (logs.some(l => l.date === dateStr)) {
+      if (!confirm(`⚠️ You already have an entry for ${dateStr}.\n\nAre you sure you want to add a duplicate entry for this exact day?`)) return;
     }
 
-    const dateStr = chosenDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
-    const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-
     logs.push({ 
-      mins: (h * 60) + m, 
-      desc: note, 
-      category: cat,
-      date: dateStr,
-      exactTime: timeStr,
-      diary: directDiary,
-      photo: activePhotoBase64 || null,
+      mins: ((parseInt(document.getElementById('inp-h').value) || 0) * 60) + (parseInt(document.getElementById('inp-m').value) || 0), 
+      desc: document.getElementById('inp-note').value.trim() || 'Daily Shift', 
+      category: settings.multiMode ? document.getElementById('inp-category').value : 'p1',
+      date: dateStr, exactTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      diary: document.getElementById('inp-diary-direct').innerHTML.trim(),
+      photos: [...activePhotosBase64],
       rawDate: chosenDate.toISOString()
     });
     
     document.getElementById('inp-diary-direct').innerHTML = '';
-    document.getElementById('inp-photo').value = '';
-    const thumb = document.getElementById('inp-photo-thumb');
-    thumb.src = '';
-    thumb.style.display = 'none';
-    activePhotoBase64 = null;
-
-    saveData();
-    switchTab('tracker');
+    activePhotosBase64 = []; renderPhotoGrid('inp-photo-grid');
+    saveData(); switchTab('tracker');
   }
 
-  function saveData() {
-    localStorage.setItem('ojt_logs', JSON.stringify(logs));
-    updateUI();
-    if (currentUser) syncWithCloud();
-  }
+  function saveData() { localStorage.setItem('ojt_logs', JSON.stringify(logs)); updateUI(); if (currentUser) syncWithCloud(); }
 
   function filterHistory(type) {
     activeHistoryFilter = type;
-    ['all', 'p1', 'p2'].forEach(t => {
-      const btn = document.getElementById(`f-${t}`);
-      if (btn) btn.classList.toggle('active', t === type);
-    });
+    ['all', 'p1', 'p2'].forEach(t => document.getElementById(`f-${t}`)?.classList.toggle('active', t === type));
     updateUI();
   }
 
   function updateUI() {
     const isMulti = settings.multiMode;
-    
     document.getElementById('dual-tracker-row').style.display = isMulti ? 'flex' : 'none';
     document.getElementById('group-category').style.display = isMulti ? 'block' : 'none';
     document.getElementById('history-filter-bar').style.display = isMulti ? 'flex' : 'none';
     
-    const p1TargetMins = (settings.targetP1 || 360) * 60;
-    const p2TargetMins = isMulti ? ((settings.targetP2 || 40) * 60) : 0;
-    const totalTargetMins = isMulti ? (p1TargetMins + p2TargetMins) : p1TargetMins;
-
+    const p1TargetMins = (settings.targetP1 || 360) * 60, p2TargetMins = isMulti ? ((settings.targetP2 || 40) * 60) : 0;
+    const totalTargetMins = p1TargetMins + p2TargetMins;
     let p1Mins = 0, p2Mins = 0;
-    logs.forEach(l => {
-      if (l.category === 'p2' && isMulti) p2Mins += l.mins;
-      else p1Mins += l.mins;
-    });
+    logs.forEach(l => { if (l.category === 'p2' && isMulti) p2Mins += l.mins; else p1Mins += l.mins; });
 
-    const totalLoggedMins = p1Mins + p2Mins;
-    const remTotalMins = Math.max(0, totalTargetMins - totalLoggedMins);
-
+    const totalLoggedMins = p1Mins + p2Mins, remTotalMins = Math.max(0, totalTargetMins - totalLoggedMins);
     document.getElementById('rem-hours').innerText = `${Math.floor(remTotalMins/60)}h ${remTotalMins%60}m`;
     const totalPct = Math.min(100, (totalLoggedMins / totalTargetMins) * 100);
     document.getElementById('progress-fill').style.width = `${totalPct}%`;
@@ -911,362 +718,76 @@
     if (isMulti) {
       document.getElementById('label-ojt1-title').innerText = `${settings.nameP1 || 'OJT 1'} (${settings.targetP1}h)`;
       document.getElementById('label-ojt2-title').innerText = `${settings.nameP2 || 'OJT 2'} (${settings.targetP2}h)`;
-
-      const remP1 = Math.max(0, p1TargetMins - p1Mins);
-      const remP2 = Math.max(0, p2TargetMins - p2Mins);
-
-      document.getElementById('rem-ojt1').innerText = `${Math.floor(remP1/60)}h ${remP1%60}m`;
-      document.getElementById('rem-ojt2').innerText = `${Math.floor(remP2/60)}h ${remP2%60}m`;
-
+      document.getElementById('rem-ojt1').innerText = `${Math.floor(Math.max(0, p1TargetMins - p1Mins)/60)}h ${Math.max(0, p1TargetMins - p1Mins)%60}m`;
+      document.getElementById('rem-ojt2').innerText = `${Math.floor(Math.max(0, p2TargetMins - p2Mins)/60)}h ${Math.max(0, p2TargetMins - p2Mins)%60}m`;
       document.getElementById('sub-ojt1').innerText = `${((p1Mins/p1TargetMins)*100).toFixed(0)}% done`;
       document.getElementById('sub-ojt2').innerText = `${((p2Mins/p2TargetMins)*100).toFixed(0)}% done`;
-
-      const sel = document.getElementById('inp-category');
-      sel.options[0].text = settings.nameP1 || 'Primary OJT';
-      sel.options[1].text = settings.nameP2 || 'Secondary OJT';
-
-      document.getElementById('f-p1').innerText = settings.nameP1 || 'OJT 1';
-      document.getElementById('f-p2').innerText = settings.nameP2 || 'OJT 2';
+      document.getElementById('f-p1').innerText = settings.nameP1; document.getElementById('f-p2').innerText = settings.nameP2;
     }
 
-    const listEl = document.getElementById('log-list');
-    const filteredLogs = logs.filter(l => {
-      if (!isMulti || activeHistoryFilter === 'all') return true;
-      if (activeHistoryFilter === 'p1') return !l.category || l.category === 'p1';
-      if (activeHistoryFilter === 'p2') return l.category === 'p2';
-      return true;
-    });
-
-    listEl.innerHTML = filteredLogs.map((l) => {
+    const filteredLogs = logs.filter(l => (!isMulti || activeHistoryFilter === 'all') ? true : (activeHistoryFilter === 'p1' ? l.category !== 'p2' : l.category === 'p2'));
+    document.getElementById('log-list').innerHTML = filteredLogs.map((l) => {
       const realIndex = logs.indexOf(l);
-      const catBadge = isMulti ? `<span class="badge" style="background:${l.category === 'p2' ? 'var(--blue)' : 'var(--mint)'}; color:#0b0f19;">${l.category === 'p2' ? (settings.nameP2||'OJT 2') : (settings.nameP1||'OJT 1')}</span>` : '';
-      
-      let diaryBadge = '';
-      if (l.diaryDraft && l.diaryDraft.trim() !== '') {
-        diaryBadge = `<span class="badge badge-draft">📝 Draft</span>`;
-      } else if (l.diary && l.diary.trim() !== '') {
-        diaryBadge = `<span class="badge badge-saved">📖 Logged</span>`;
-      }
-
-      const photoIcon = l.photo ? ' 📷' : '';
-      const displayTime = l.exactTime || (l.date.includes(' - ') ? l.date.split(' - ')[1] : '');
-
+      const catBadge = isMulti ? `<span class="badge" style="background:${l.category === 'p2' ? 'var(--blue)' : 'var(--mint)'}; color:var(--bg);">${l.category === 'p2' ? settings.nameP2 : settings.nameP1}</span>` : '';
+      let diaryBadge = l.diaryDraft ? `<span class="badge badge-draft">📝 Draft</span>` : (l.diary ? `<span class="badge badge-saved">📖 Logged</span>` : '');
+      const photoIcon = (l.photos && l.photos.length > 0) || l.photo ? ' 📷' : '';
       return `
-        <div class="log-item ${selectedLogIdx === realIndex ? 'selected' : ''}" 
-             onclick="selectedLogIdx=${realIndex}; updateUI();" 
-             ondblclick="openDiaryModal(${realIndex})">
+        <div class="log-item ${selectedLogIdx === realIndex ? 'selected' : ''}" onclick="selectedLogIdx=${realIndex}; updateUI();" ondblclick="openDiaryModal(${realIndex})">
           <div>
             <div class="log-info-main">+${Math.floor(l.mins/60)}h${l.mins%60}m | ${l.desc} ${diaryBadge}${photoIcon} ${catBadge}</div>
-            <div class="log-info-sub">${l.date.split(' - ')[0]} ${displayTime ? '• ' + displayTime : ''}</div>
+            <div class="log-info-sub">${l.date.split(' - ')[0]} ${l.exactTime ? '• '+l.exactTime : ''}</div>
           </div>
-        </div>
-      `;
+        </div>`;
     }).join('');
 
     document.getElementById('eta-text').innerText = remTotalMins <= 0 ? "🎉 Completed!" : calculateFlexibleETA(remTotalMins);
-    
     const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    const activeDaysStr = (settings.workDays || [1,2,3,4,5]).map(d => dayNames[d]).join(', ');
-    document.getElementById('eta-schedule-sub').innerText = `Active Shifts: ${activeDaysStr || 'None'} (${settings.shiftHours || 8}h/day)`;
+    document.getElementById('eta-schedule-sub').innerText = `Active Shifts: ${(settings.workDays || []).map(d => dayNames[d]).join(', ')} (${settings.shiftHours || 8}h/day)`;
 
+    // Calendar Legends
     const legendContainer = document.getElementById('cal-legend-container');
-    if (legendContainer) {
-      legendContainer.innerHTML = settings.presets.map(p => `
-        <div class="leg-item">
-          <div class="dot" style="background:${p.color || '#2dd4bf'};"></div>
-          <span style="color:var(--text);">${p.name || 'Shift'}</span>
-        </div>
-      `).join('');
-    }
-
+    if (legendContainer) legendContainer.innerHTML = settings.presets.map(p => `<div class="leg-item"><div class="dot" style="background:${p.color || '#2dd4bf'};"></div><span style="color:var(--text);">${p.name}</span></div>`).join('');
+    
     renderPresets();
   }
 
-  /* BATCH POPULATE */
-  function openBatchModal() {
-    const today = new Date();
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(today.getMonth() - 1);
-
-    document.getElementById('batch-start').valueAsDate = oneMonthAgo;
-    document.getElementById('batch-end').valueAsDate = today;
-
-    document.getElementById('group-batch-category').style.display = settings.multiMode ? 'block' : 'none';
-    if (settings.multiMode) {
-      const sel = document.getElementById('batch-category');
-      sel.options[0].text = settings.nameP1 || 'Primary OJT';
-      sel.options[1].text = settings.nameP2 || 'Secondary OJT';
-    }
-
-    document.getElementById('batch-modal').classList.add('active');
-  }
-
-  function closeBatchModal() {
-    document.getElementById('batch-modal').classList.remove('active');
-  }
-
-  function generateBatchLogs() {
-    const startVal = document.getElementById('batch-start').value;
-    const endVal = document.getElementById('batch-end').value;
-
-    if (!startVal || !endVal) {
-      alert('Please select both a Start Date and End Date!');
-      return;
-    }
-
-    const startParts = startVal.split('-');
-    const endParts = endVal.split('-');
-    
-    let dt = new Date(startParts[0], startParts[1] - 1, startParts[2]);
-    const endDt = new Date(endParts[0], endParts[1] - 1, endParts[2]);
-
-    if (dt > endDt) {
-      alert('Start Date must be before End Date!');
-      return;
-    }
-
-    const activeBatchDays = [];
-    if (document.getElementById('b-mon').checked) activeBatchDays.push(1);
-    if (document.getElementById('b-tue').checked) activeBatchDays.push(2);
-    if (document.getElementById('b-wed').checked) activeBatchDays.push(3);
-    if (document.getElementById('b-thu').checked) activeBatchDays.push(4);
-    if (document.getElementById('b-fri').checked) activeBatchDays.push(5);
-    if (document.getElementById('b-sat').checked) activeBatchDays.push(6);
-    if (document.getElementById('b-sun').checked) activeBatchDays.push(0);
-
-    const h = parseInt(document.getElementById('batch-h').value) || 0;
-    const m = parseInt(document.getElementById('batch-m').value) || 0;
-    const note = document.getElementById('batch-note').value.trim() || 'Daily Shift';
-    const cat = settings.multiMode ? document.getElementById('batch-category').value : 'p1';
-
-    let count = 0;
-    while (dt <= endDt) {
-      const dayOfWeek = dt.getDay();
-      if (activeBatchDays.includes(dayOfWeek)) {
-        const dateStr = dt.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
-        
-        logs.push({
-          mins: (h * 60) + m,
-          desc: note,
-          category: cat,
-          date: dateStr,
-          exactTime: '05:00 PM',
-          diary: '',
-          photo: null,
-          rawDate: dt.toISOString()
-        });
-        count++;
-      }
-      dt.setDate(dt.getDate() + 1);
-    }
-
-    saveData();
-    closeBatchModal();
-    alert(`🎉 Generated ${count} entries!`);
-    switchTab('tracker');
-  }
-
-  /* CALENDAR INTERACTION */
-  function onCalendarDayClick(day) {
-    let foundIndex = -1;
-    for (let i = 0; i < logs.length; i++) {
-      const l = logs[i];
-      let dt = l.rawDate ? new Date(l.rawDate) : new Date(l.date.split(' - ')[0]);
-      if (isNaN(dt.getTime())) {
-        const parts = l.date.split(' - ')[0].replace(',', '').split(' ');
-        if (parts.length >= 3) dt = new Date(`${parts[0]} ${parts[1]}, ${parts[2]}`);
-      }
-      if (!isNaN(dt.getTime()) && dt.getFullYear() === currYear && dt.getMonth() === currMonth && dt.getDate() === day) {
-        foundIndex = i;
-        break;
-      }
-    }
-
-    if (foundIndex !== -1) {
-      selectedLogIdx = foundIndex;
-      openDiaryModal(foundIndex);
-    } else {
-      pendingClickedDate = new Date(currYear, currMonth, day);
-      const dateStr = pendingClickedDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
-      activeDiaryIdx = 'new';
-      
-      document.getElementById('diary-modal-title').innerText = 'NEW LOG & DIARY ENTRY';
-      document.getElementById('diary-modal-date').innerText = `${dateStr} (Unlogged)`;
-      document.getElementById('edit-h').value = 8;
-      document.getElementById('edit-m').value = 0;
-      document.getElementById('edit-note').value = 'Daily Shift';
-      document.getElementById('diary-textarea').innerHTML = '';
-      
-      removeAttachedPhoto();
-      document.getElementById('btn-modal-delete').style.display = 'none';
-      document.getElementById('diary-modal').classList.add('active');
-    }
-  }
-
-  function openDiaryForSelected() {
-    if (selectedLogIdx !== null) openDiaryModal(selectedLogIdx);
-    else alert('Please tap a log entry first!');
-  }
-
-  function openDiaryModal(idx) {
-    activeDiaryIdx = idx;
-    const l = logs[idx];
-    document.getElementById('diary-modal-title').innerText = 'EDIT LOG & DIARY ENTRY';
-    document.getElementById('diary-modal-date').innerText = `${l.date} (${Math.floor(l.mins/60)}h ${l.mins%60}m) - ${l.desc}`;
-    document.getElementById('edit-h').value = Math.floor(l.mins / 60);
-    document.getElementById('edit-m').value = l.mins % 60;
-    document.getElementById('edit-note').value = l.desc;
-    document.getElementById('diary-textarea').innerHTML = l.diaryDraft || l.diary || '';
-    
-    // Set Photo Preview
-    activePhotoBase64 = l.photo || null;
-    const thumb = document.getElementById('edit-photo-thumb');
-    if (l.photo) {
-      thumb.src = l.photo;
-      thumb.style.display = 'block';
-    } else {
-      thumb.src = '';
-      thumb.style.display = 'none';
-    }
-    
-    document.getElementById('btn-modal-delete').style.display = 'block';
-    document.getElementById('diary-modal').classList.add('active');
-  }
-
-  function closeDiaryModal() {
-    document.getElementById('diary-modal').classList.remove('active');
-    activeDiaryIdx = null;
-    pendingClickedDate = null;
-    activePhotoBase64 = null;
-    updateUI();
-  }
-
-  function deleteEntryFromModal() {
-    if (activeDiaryIdx !== null && activeDiaryIdx !== 'new') {
-      logs.splice(activeDiaryIdx, 1);
-      selectedLogIdx = null;
-      activeDiaryIdx = null;
-      pendingClickedDate = null;
-      activePhotoBase64 = null;
-      saveData();
-      document.getElementById('diary-modal').classList.remove('active');
-    }
-  }
-
-  function saveDiaryEntry() {
-    const editH = parseInt(document.getElementById('edit-h').value) || 0;
-    const editM = parseInt(document.getElementById('edit-m').value) || 0;
-    const editNote = document.getElementById('edit-note').value.trim() || 'Daily Shift';
-    const diaryContent = document.getElementById('diary-textarea').innerHTML;
-
-    if (activeDiaryIdx === 'new' && pendingClickedDate) {
-      const dateStr = pendingClickedDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
-      logs.push({
-        mins: (editH * 60) + editM,
-        desc: editNote,
-        category: 'p1',
-        date: dateStr,
-        exactTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-        diary: diaryContent,
-        photo: activePhotoBase64 || null,
-        rawDate: pendingClickedDate.toISOString()
-      });
-    } else if (activeDiaryIdx !== null && logs[activeDiaryIdx]) {
-      logs[activeDiaryIdx].mins = (editH * 60) + editM;
-      logs[activeDiaryIdx].desc = editNote;
-      logs[activeDiaryIdx].diary = diaryContent;
-      logs[activeDiaryIdx].photo = activePhotoBase64 || null;
-      delete logs[activeDiaryIdx].diaryDraft;
-    }
-    
-    saveData();
-    closeDiaryModal();
-  }
-
   function calculateFlexibleETA(remainingMins) {
-    let curr = new Date();
-    let minsLeft = remainingMins;
-    const workDays = settings.workDays || [1,2,3,4,5];
-    const shiftMins = (settings.shiftHours || 8) * 60;
-
+    let curr = new Date(), minsLeft = remainingMins, workDays = settings.workDays || [1,2,3,4,5], shiftMins = (settings.shiftHours || 8) * 60;
     if (shiftMins <= 0 || workDays.length === 0) return "Select active work days in Settings";
-
-    if (curr.getHours() > 17 || (curr.getHours() === 17 && curr.getMinutes() >= 45)) {
-      curr.setDate(curr.getDate() + 1);
-      curr.setHours(8, 45, 0, 0);
-    } else if (curr.getHours() < 8 || (curr.getHours() === 8 && curr.getMinutes() < 45)) {
-      curr.setHours(8, 45, 0, 0);
-    }
+    if (curr.getHours() > 17 || (curr.getHours() === 17 && curr.getMinutes() >= 45)) { curr.setDate(curr.getDate() + 1); curr.setHours(8, 45, 0, 0); } 
+    else if (curr.getHours() < 8 || (curr.getHours() === 8 && curr.getMinutes() < 45)) curr.setHours(8, 45, 0, 0);
 
     while (minsLeft > 0) {
-      const dayOfWeek = curr.getDay();
-      if (workDays.includes(dayOfWeek)) {
+      if (workDays.includes(curr.getDay())) {
         let lunchStart = new Date(curr); lunchStart.setHours(12, 0, 0, 0);
         let lunchEnd = new Date(curr); lunchEnd.setHours(13, 0, 0, 0);
-        
-        if (curr >= lunchStart && curr < lunchEnd) {
-          curr = new Date(lunchEnd);
-        }
-
-        let availableToday = shiftMins;
-        if (minsLeft <= availableToday) {
-          let addMins = minsLeft;
-          let futureTime = new Date(curr.getTime() + addMins * 60000);
+        if (curr >= lunchStart && curr < lunchEnd) curr = new Date(lunchEnd);
+        if (minsLeft <= shiftMins) {
+          let addMins = minsLeft, futureTime = new Date(curr.getTime() + addMins * 60000);
           if (curr < lunchStart && futureTime >= lunchStart) addMins += 60;
-          curr = new Date(curr.getTime() + addMins * 60000);
-          minsLeft = 0;
-        } else {
-          minsLeft -= availableToday;
-          curr.setDate(curr.getDate() + 1);
-          curr.setHours(8, 45, 0, 0);
-        }
-      } else {
-        curr.setDate(curr.getDate() + 1);
-        curr.setHours(8, 45, 0, 0);
-      }
+          curr = new Date(curr.getTime() + addMins * 60000); minsLeft = 0;
+        } else { minsLeft -= shiftMins; curr.setDate(curr.getDate() + 1); curr.setHours(8, 45, 0, 0); }
+      } else { curr.setDate(curr.getDate() + 1); curr.setHours(8, 45, 0, 0); }
     }
-
-    const dateFormatted = curr.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-    const timeFormatted = curr.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    return `${dateFormatted} at ${timeFormatted}`;
+    return `${curr.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })} at ${curr.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
   }
 
   function renderCalendar() {
-    const title = document.getElementById('cal-month-title');
+    document.getElementById('cal-month-title').innerText = new Date(currYear, currMonth, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     const grid = document.getElementById('cal-grid');
-    const d = new Date(currYear, currMonth, 1);
-    title.innerText = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-
     grid.innerHTML = ['M','T','W','T','F','S','S'].map(n => `<div class="cal-day-name">${n}</div>`).join('');
     
-    let firstDay = (d.getDay() + 6) % 7;
+    let firstDay = (new Date(currYear, currMonth, 1).getDay() + 6) % 7;
     let daysInMonth = new Date(currYear, currMonth + 1, 0).getDate();
-
     const dayMap = {};
+
     logs.forEach(l => {
       let dt = l.rawDate ? new Date(l.rawDate) : new Date(l.date.split(' - ')[0]);
-      if (isNaN(dt.getTime())) {
-        const parts = l.date.split(' - ')[0].replace(',', '').split(' ');
-        if (parts.length >= 3) dt = new Date(`${parts[0]} ${parts[1]}, ${parts[2]}`);
-      }
-
-      if (!isNaN(dt.getTime()) && dt.getFullYear() === currYear && dt.getMonth() === currMonth) {
-        let col = '#2dd4bf';
-        
-        let matchedPreset = settings.presets.find(p => p.h * 60 + p.m === l.mins);
-        if (!matchedPreset) {
-          const descLower = l.desc.toLowerCase();
-          matchedPreset = settings.presets.find(p => descLower.includes(p.name.toLowerCase()));
-        }
-        
-        if (matchedPreset && matchedPreset.color) {
-          col = matchedPreset.color;
-        } else {
-          col = '#2dd4bf';
-        }
-        
+      if (dt.getFullYear() === currYear && dt.getMonth() === currMonth) {
+        let matchedPreset = settings.presets.find(p => p.h * 60 + p.m === l.mins) || settings.presets.find(p => l.desc.toLowerCase().includes(p.name.toLowerCase()));
+        let col = matchedPreset ? matchedPreset.color : '#2dd4bf';
         if (!dayMap[dt.getDate()]) dayMap[dt.getDate()] = [];
-        dayMap[dt.getDate()].push({ col, cat: l.category || 'p1' });
+        dayMap[dt.getDate()].push({ col });
       }
     });
 
@@ -1274,147 +795,140 @@
     for (let day = 1; day <= daysInMonth; day++) {
       let customBg = '';
       if (dayMap[day]) {
-        const entries = dayMap[day];
-        if (entries.length > 1 && settings.multiMode) {
-          customBg = `background: linear-gradient(135deg, ${entries[0].col} 50%, ${entries[1].col} 50%) !important; color:#0b0f19 !important;`;
-        } else {
-          customBg = `background:${entries[0].col} !important; color:#0b0f19 !important;`;
-        }
+        if (dayMap[day].length > 1) customBg = `background: linear-gradient(135deg, ${dayMap[day][0].col} 50%, ${dayMap[day][1].col} 50%) !important; color:var(--bg) !important;`;
+        else customBg = `background:${dayMap[day][0].col} !important; color:var(--bg) !important;`;
       }
       grid.innerHTML += `<div class="cal-cell" style="${customBg}" onclick="onCalendarDayClick(${day})">${day}</div>`;
     }
   }
 
-  function changeMonth(delta) {
-    currMonth += delta;
-    if (currMonth > 11) {
-      currMonth = 0;
-      currYear++;
-    } else if (currMonth < 0) {
-      currMonth = 11;
-      currYear--;
-    }
-    renderCalendar();
-  }
+  function changeMonth(delta) { currMonth += delta; if (currMonth > 11) { currMonth = 0; currYear++; } else if (currMonth < 0) { currMonth = 11; currYear--; } renderCalendar(); }
+  
+  function deleteSelectedLog() { if (selectedLogIdx !== null) { logs.splice(selectedLogIdx, 1); selectedLogIdx = null; saveData(); } }
 
-  function deleteSelectedLog() {
-    if (selectedLogIdx !== null) {
-      logs.splice(selectedLogIdx, 1);
-      selectedLogIdx = null;
-      saveData();
-    }
-  }
-
-  function toggleMultiModeUI() {
-    const checked = document.getElementById('set-multi-mode').checked;
-    document.getElementById('group-target-p2').style.display = checked ? 'block' : 'none';
-    document.getElementById('card-labels-settings').style.display = checked ? 'block' : 'none';
-    document.getElementById('lbl-target-p1').innerText = checked ? 'Primary OJT Goal (Hours)' : 'Target Required OJT Hours';
-  }
-
-  /* DYNAMIC PRESETS MANAGEMENT */
-  function addNewPreset() {
-    settings.presets.push({
-      name: 'New Shift',
-      h: 8,
-      m: 0,
-      note: 'Shift Note',
-      color: '#38bdf8'
+  /* CALENDAR DAY CLICK */
+  function onCalendarDayClick(day) {
+    let foundIndex = logs.findIndex(l => {
+      let dt = l.rawDate ? new Date(l.rawDate) : new Date(l.date.split(' - ')[0]);
+      return dt.getFullYear() === currYear && dt.getMonth() === currMonth && dt.getDate() === day;
     });
-    renderPresetSettingsList();
-  }
 
-  function deletePreset(index) {
-    if (settings.presets.length <= 1) {
-      alert('You must keep at least one category!');
-      return;
+    if (foundIndex !== -1) { selectedLogIdx = foundIndex; openDiaryModal(foundIndex); } 
+    else {
+      pendingClickedDate = new Date(currYear, currMonth, day);
+      activeDiaryIdx = 'new';
+      document.getElementById('diary-modal-title').innerText = 'NEW LOG ENTRY';
+      document.getElementById('diary-modal-date').innerText = `${pendingClickedDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })} (Unlogged)`;
+      document.getElementById('edit-h').value = 8; document.getElementById('edit-m').value = 0; document.getElementById('edit-note').value = 'Daily Shift';
+      document.getElementById('diary-textarea').innerHTML = '';
+      activePhotosBase64 = []; renderPhotoGrid('edit-photo-grid');
+      document.getElementById('btn-modal-delete').style.display = 'none';
+      document.getElementById('diary-modal').classList.add('active');
     }
-    settings.presets.splice(index, 1);
-    renderPresetSettingsList();
   }
 
+  function openDiaryForSelected() { if (selectedLogIdx !== null) openDiaryModal(selectedLogIdx); else alert('Please tap a log entry first!'); }
+
+  function openDiaryModal(idx) {
+    activeDiaryIdx = idx; const l = logs[idx];
+    document.getElementById('diary-modal-title').innerText = 'EDIT LOG & DIARY';
+    document.getElementById('diary-modal-date').innerText = `${l.date} (${Math.floor(l.mins/60)}h ${l.mins%60}m)`;
+    document.getElementById('edit-h').value = Math.floor(l.mins / 60); document.getElementById('edit-m').value = l.mins % 60; document.getElementById('edit-note').value = l.desc;
+    document.getElementById('diary-textarea').innerHTML = l.diaryDraft || l.diary || '';
+    
+    // Support legacy singular photo + array of photos
+    activePhotosBase64 = l.photos ? [...l.photos] : (l.photo ? [l.photo] : []);
+    renderPhotoGrid('edit-photo-grid');
+    
+    document.getElementById('btn-modal-delete').style.display = 'block';
+    document.getElementById('diary-modal').classList.add('active');
+  }
+
+  function closeDiaryModal() { document.getElementById('diary-modal').classList.remove('active'); activeDiaryIdx = null; pendingClickedDate = null; activePhotosBase64 = []; updateUI(); }
+  function deleteEntryFromModal() { if (activeDiaryIdx !== null && activeDiaryIdx !== 'new') { logs.splice(activeDiaryIdx, 1); selectedLogIdx = null; saveData(); closeDiaryModal(); } }
+
+  function saveDiaryEntry() {
+    if (activeDiaryIdx === 'new' && pendingClickedDate) {
+      logs.push({
+        mins: ((parseInt(document.getElementById('edit-h').value) || 0) * 60) + (parseInt(document.getElementById('edit-m').value) || 0),
+        desc: document.getElementById('edit-note').value.trim() || 'Daily Shift', category: 'p1',
+        date: pendingClickedDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+        exactTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        diary: document.getElementById('diary-textarea').innerHTML,
+        photos: [...activePhotosBase64], rawDate: pendingClickedDate.toISOString()
+      });
+    } else if (activeDiaryIdx !== null && logs[activeDiaryIdx]) {
+      logs[activeDiaryIdx].mins = ((parseInt(document.getElementById('edit-h').value) || 0) * 60) + (parseInt(document.getElementById('edit-m').value) || 0);
+      logs[activeDiaryIdx].desc = document.getElementById('edit-note').value.trim() || 'Daily Shift';
+      logs[activeDiaryIdx].diary = document.getElementById('diary-textarea').innerHTML;
+      logs[activeDiaryIdx].photos = [...activePhotosBase64];
+      delete logs[activeDiaryIdx].photo; delete logs[activeDiaryIdx].diaryDraft;
+    }
+    saveData(); closeDiaryModal();
+  }
+
+  /* SETTINGS & CATEGORIES */
+  function previewTheme() { document.body.setAttribute('data-theme', document.getElementById('set-theme').value); }
+  function toggleMultiModeUI() { const chk = document.getElementById('set-multi-mode').checked; document.getElementById('group-target-p2').style.display = chk ? 'block' : 'none'; document.getElementById('card-labels-settings').style.display = chk ? 'flex' : 'none'; }
+  
+  function addNewPreset() { settings.presets.push({ name: 'New Category', h: 8, m: 0, note: '', color: '#38bdf8' }); renderPresetSettingsList(); }
+  function deletePreset(index) { if (settings.presets.length <= 1) return alert('You must keep at least one category!'); settings.presets.splice(index, 1); renderPresetSettingsList(); }
+  
   function renderPresetSettingsList() {
-    const list = document.getElementById('preset-settings-list');
-    list.innerHTML = settings.presets.map((p, i) => `
+    document.getElementById('preset-settings-list').innerHTML = settings.presets.map((p, i) => `
       <div style="background:var(--card-alt); padding:10px; border-radius:10px; margin-bottom:8px; border: 1px solid var(--border);">
         <div class="input-row" style="margin-bottom:6px;">
-          <div class="input-group" style="flex:2;">
-            <label>Category #${i+1}</label>
-            <input type="text" id="set-p-name-${i}" value="${p.name || ''}">
-          </div>
-          <div class="input-group" style="flex:1;">
-            <label>Color</label>
-            <input type="color" id="set-p-color-${i}" value="${p.color || '#2dd4bf'}">
-          </div>
-          <button class="btn btn-danger" style="margin-top: 18px; padding: 0 10px; height: 38px; width: auto;" onclick="deletePreset(${i})">✕</button>
+          <div class="input-group" style="flex:2;"><label>Name</label><input type="text" id="set-p-name-${i}" value="${p.name}"></div>
+          <div class="input-group" style="flex:1;"><label>Color</label><input type="color" id="set-p-color-${i}" value="${p.color}"></div>
+          <button class="btn btn-danger" style="margin-top: 20px; padding: 0 10px; height: 38px; width: auto;" onclick="deletePreset(${i})">✕</button>
         </div>
-        <div class="input-row">
+        <div class="input-row" style="margin-bottom:0;">
           <div class="input-group"><label>Hrs</label><input type="number" id="set-p-h-${i}" value="${p.h}"></div>
           <div class="input-group"><label>Mins</label><input type="number" id="set-p-m-${i}" value="${p.m}"></div>
-          <div class="input-group" style="flex:2;"><label>Default Note</label><input type="text" id="set-p-note-${i}" value="${p.note}"></div>
+          <div class="input-group" style="flex:2;"><label>Note</label><input type="text" id="set-p-note-${i}" value="${p.note}"></div>
         </div>
-      </div>
-    `).join('');
+      </div>`).join('');
   }
 
   function loadSettingsForm() {
-    document.getElementById('set-multi-mode').checked = settings.multiMode || false;
-    document.getElementById('set-target-p1').value = settings.targetP1 || 480;
-    document.getElementById('set-target-p2').value = settings.targetP2 || 40;
-    document.getElementById('set-name-p1').value = settings.nameP1 || 'OJT 1';
-    document.getElementById('set-name-p2').value = settings.nameP2 || 'OJT 2';
-    document.getElementById('set-shift-hours').value = settings.shiftHours || 8;
-
-    const days = settings.workDays || [1, 2, 3, 4, 5];
-    document.getElementById('sch-mon').checked = days.includes(1);
-    document.getElementById('sch-tue').checked = days.includes(2);
-    document.getElementById('sch-wed').checked = days.includes(3);
-    document.getElementById('sch-thu').checked = days.includes(4);
-    document.getElementById('sch-fri').checked = days.includes(5);
-    document.getElementById('sch-sat').checked = days.includes(6);
-    document.getElementById('sch-sun').checked = days.includes(0);
-
-    toggleMultiModeUI();
-    renderPresetSettingsList();
+    document.getElementById('set-theme').value = settings.theme || 'slate';
+    document.getElementById('set-multi-mode').checked = settings.multiMode;
+    document.getElementById('set-target-p1').value = settings.targetP1; document.getElementById('set-target-p2').value = settings.targetP2;
+    document.getElementById('set-name-p1').value = settings.nameP1; document.getElementById('set-name-p2').value = settings.nameP2;
+    document.getElementById('set-shift-hours').value = settings.shiftHours;
+    [1,2,3,4,5,6,0].forEach(d => {
+      const el = document.getElementById('sch-' + ['sun','mon','tue','wed','thu','fri','sat'][d]);
+      if(el) el.checked = settings.workDays.includes(d);
+    });
+    toggleMultiModeUI(); renderPresetSettingsList();
   }
 
   function saveSettings() {
+    settings.theme = document.getElementById('set-theme').value;
     settings.multiMode = document.getElementById('set-multi-mode').checked;
-    settings.targetP1 = parseInt(document.getElementById('set-target-p1').value) || 360;
-    settings.targetP2 = parseInt(document.getElementById('set-target-p2').value) || 40;
-    settings.nameP1 = document.getElementById('set-name-p1').value.trim() || 'OJT 1';
-    settings.nameP2 = document.getElementById('set-name-p2').value.trim() || 'OJT 2';
+    settings.targetP1 = parseInt(document.getElementById('set-target-p1').value) || 360; settings.targetP2 = parseInt(document.getElementById('set-target-p2').value) || 40;
+    settings.nameP1 = document.getElementById('set-name-p1').value.trim() || 'OJT 1'; settings.nameP2 = document.getElementById('set-name-p2').value.trim() || 'OJT 2';
     settings.shiftHours = parseInt(document.getElementById('set-shift-hours').value) || 8;
-
-    const activeDays = [];
-    if (document.getElementById('sch-mon').checked) activeDays.push(1);
-    if (document.getElementById('sch-tue').checked) activeDays.push(2);
-    if (document.getElementById('sch-wed').checked) activeDays.push(3);
-    if (document.getElementById('sch-thu').checked) activeDays.push(4);
-    if (document.getElementById('sch-fri').checked) activeDays.push(5);
-    if (document.getElementById('sch-sat').checked) activeDays.push(6);
-    if (document.getElementById('sch-sun').checked) activeDays.push(0);
-    settings.workDays = activeDays;
-
-    settings.presets = settings.presets.map((_, i) => ({
-      name: document.getElementById(`set-p-name-${i}`).value,
-      h: parseInt(document.getElementById(`set-p-h-${i}`).value) || 0,
-      m: parseInt(document.getElementById(`set-p-m-${i}`).value) || 0,
-      note: document.getElementById(`set-p-note-${i}`).value,
-      color: document.getElementById(`set-p-color-${i}`).value
-    }));
-
+    settings.workDays = [1,2,3,4,5,6,0].filter(d => document.getElementById('sch-' + ['sun','mon','tue','wed','thu','fri','sat'][d])?.checked);
+    settings.presets = settings.presets.map((_, i) => ({ name: document.getElementById(`set-p-name-${i}`).value, h: parseInt(document.getElementById(`set-p-h-${i}`).value)||0, m: parseInt(document.getElementById(`set-p-m-${i}`).value)||0, note: document.getElementById(`set-p-note-${i}`).value, color: document.getElementById(`set-p-color-${i}`).value }));
     localStorage.setItem('ojt_settings', JSON.stringify(settings));
-    updateUI();
-    if (currentUser) syncWithCloud();
-    alert('Settings Saved Successfully!');
-    switchTab('tracker');
+    updateUI(); if (currentUser) syncWithCloud(); alert('Settings Saved!'); switchTab('tracker');
   }
 
-  updateUI();
-  window.onload = () => {
-    initAuth();
-  };
+  // Batch Populate Code Minified to save space
+  function openBatchModal() { document.getElementById('batch-start').valueAsDate=new Date(new Date().setMonth(new Date().getMonth()-1)); document.getElementById('batch-end').valueAsDate=new Date(); document.getElementById('group-batch-category').style.display=settings.multiMode?'block':'none'; document.getElementById('batch-modal').classList.add('active'); }
+  function closeBatchModal() { document.getElementById('batch-modal').classList.remove('active'); }
+  function generateBatchLogs() {
+    const sVal=document.getElementById('batch-start').value, eVal=document.getElementById('batch-end').value; if(!sVal||!eVal)return alert('Select dates!');
+    let dt=new Date(sVal.split('-')[0], sVal.split('-')[1]-1, sVal.split('-')[2]), endDt=new Date(eVal.split('-')[0], eVal.split('-')[1]-1, eVal.split('-')[2]);
+    if(dt>endDt)return alert('Start must be before End!');
+    const aDays=[1,2,3,4,5,6,0].filter(d=>document.getElementById('b-'+['sun','mon','tue','wed','thu','fri','sat'][d]).checked);
+    const h=parseInt(document.getElementById('batch-h').value)||0, m=parseInt(document.getElementById('batch-m').value)||0, nt=document.getElementById('batch-note').value||'Shift', cat=settings.multiMode?document.getElementById('batch-category').value:'p1';
+    let c=0; while(dt<=endDt){ if(aDays.includes(dt.getDay())){ logs.push({mins: (h*60)+m, desc: nt, category: cat, date: dt.toLocaleDateString('en-US',{month:'short',day:'2-digit',year:'numeric'}), exactTime: '05:00 PM', diary: '', photos: [], rawDate: dt.toISOString()}); c++; } dt.setDate(dt.getDate()+1); }
+    saveData(); closeBatchModal(); alert(`Generated ${c} entries!`); switchTab('tracker');
+  }
+
+  updateUI(); window.onload = () => initAuth();
 </script>
 </body>
 </html>
