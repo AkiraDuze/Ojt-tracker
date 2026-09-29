@@ -124,7 +124,7 @@
     .progress-sub { font-size: 0.75rem; color: var(--text-muted); }
 
     /* Buttons */
-    .btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 12px; font-size: 0.78rem; font-weight: 700; border-radius: 12px; cursor: pointer; transition: transform 0.1s ease, opacity 0.2s; }
+    .btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 12px; font-size: 0.78rem; font-weight: 700; border-radius: 12px; cursor: pointer; transition: transform 0.1s ease, opacity 0.2s, background-color 0.3s; }
     .btn:active { transform: scale(0.98); opacity: 0.85; }
     .btn-primary { background: var(--accent); color: var(--bg); border: none; width: 100%; padding: 14px; margin-top: 12px; font-size: 0.88rem; font-weight: 700; border-radius: 12px; }
     .btn-danger { background: var(--red); color: #fff; border: none; width: 100%; padding: 12px; font-size: 0.8rem; font-weight: 700; border-radius: 12px; }
@@ -151,14 +151,12 @@
     .rich-editor:empty:before { content: attr(data-placeholder); color: var(--text-muted); }
     .rich-editor ul, .rich-editor ol { padding-left: 20px; }
 
-    /* Multiple Photo Upload Component */
+    /* Clean Thumbnail Grid */
     .photo-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; }
-    .photo-item { position: relative; width: 86px; display: flex; flex-direction: column; gap: 6px; }
-    .photo-thumb { width: 86px; height: 86px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); }
-    .photo-actions { display: flex; justify-content: space-between; gap: 4px; }
-    .photo-act-btn { flex: 1; background: var(--card-alt); border: 1px solid var(--border); color: var(--text); border-radius: 6px; font-size: 0.75rem; padding: 4px 0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
-    .photo-act-btn:active { background: var(--accent); color: var(--bg); }
-    .photo-act-btn.del { color: var(--red); }
+    .photo-item { position: relative; width: 64px; height: 64px; cursor: pointer; }
+    .photo-thumb { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); }
+    .photo-del-btn { position: absolute; top: -6px; right: -6px; background: #4b4b4b; color: #fff; border: 2px solid var(--card); width: 22px; height: 22px; border-radius: 50%; font-size: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+    .photo-del-btn:hover { background: #666; }
 
     /* File Input Button Override */
     input[type="file"]::file-selector-button { background: var(--card-alt); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-right: 10px; transition: background 0.2s; }
@@ -210,7 +208,7 @@
     input:checked + .slider { background-color: var(--accent); }
     input:checked + .slider:before { transform: translateX(18px); background-color: var(--bg); }
 
-    /* Full Screen Modal */
+    /* Full Screen Modals */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 100; justify-content: center; align-items: center; padding: 16px; }
     .modal-overlay.active { display: flex; }
     .modal-box { background: var(--card); border: 1px solid var(--border); border-radius: 22px; width: 100%; max-width: 400px; max-height: 90%; display: flex; flex-direction: column; padding: 18px; box-shadow: 0 12px 35px rgba(0,0,0,0.6); overflow-y: auto; }
@@ -271,7 +269,7 @@
         <div class="input-row">
           <div class="input-group">
             <label>Date</label>
-            <input type="date" id="inp-date">
+            <input type="date" id="inp-date" onchange="checkDateForDuplicate()">
           </div>
           <div class="input-group" id="group-category" style="display: none;">
             <label>Target OJT</label>
@@ -308,7 +306,7 @@
           <div class="photo-grid" id="inp-photo-grid"></div>
         </div>
       </div>
-      <button class="btn btn-primary" style="margin-top: 20px;" onclick="addLog()">+ Log Worked Hours</button>
+      <button class="btn btn-primary" id="btn-main-log" style="margin-top: 20px;" onclick="addLog()">+ Log Worked Hours</button>
     </div>
   </div>
 
@@ -351,7 +349,7 @@
     <!-- 1. Cloud Sync -->
     <div class="card settings-card">
       <h4>☁️ Account & Sync</h4>
-      <p style="font-size:0.68rem; color:var(--text-muted); margin-bottom:10px;">Sign in with Google to automatically back up your data to the cloud.</p>
+      <p style="font-size:0.68rem; color:var(--text-muted); margin-bottom:10px;">Sign in with Google to enable automatic background syncing across all your devices.</p>
       
       <button class="btn btn-primary" style="margin-top:0; background:#fff; color:#111; display:flex; align-items:center; justify-content:center; gap:8px;" id="btn-cloud-auth" onclick="handleAuthClick()">
         <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
@@ -360,7 +358,7 @@
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
         <span id="cloud-sync-status" style="font-size:0.68rem; color:var(--accent);">Status: Saved locally</span>
-        <button class="btn" style="padding:5px 10px; font-size:0.65rem;" id="btn-cloud-sync" onclick="syncWithCloud()">Sync Now</button>
+        <button class="btn" style="padding:5px 10px; font-size:0.65rem;" id="btn-cloud-sync" onclick="syncWithCloud()">Force Sync</button>
       </div>
     </div>
 
@@ -438,7 +436,7 @@
   </div>
 </div>
 
-<!-- EDIT ENTRY & DIARY MODAL -->
+<!-- EDIT ENTRY MODAL (CALENDAR & HISTORY) -->
 <div class="modal-overlay" id="diary-modal">
   <div class="modal-box">
     <div class="modal-header">
@@ -476,6 +474,28 @@
       <button class="btn btn-danger" style="flex:0.8; padding:12px;" id="btn-modal-delete" onclick="deleteEntryFromModal()">Delete</button>
       <button class="btn" style="flex:0.8; padding:12px;" onclick="closeDiaryModal()">Close</button>
       <button class="btn btn-primary" style="flex:1.2; margin:0; padding:12px;" onclick="saveDiaryEntry()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- PHOTO VIEWER MODAL -->
+<div class="modal-overlay" id="photo-viewer-modal" style="z-index: 200;">
+  <div class="modal-box" style="padding:0; overflow:hidden;">
+    <div style="padding:18px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div>
+          <h3 style="margin:0; font-size: 1.1rem; color:var(--text);">Photo</h3>
+          <div style="font-size:0.7rem; color:var(--text-muted); margin-top: 4px;">Tap copy or save. Remove happens from the thumbnail.</div>
+        </div>
+        <button onclick="closePhotoViewer()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+      </div>
+      <div style="margin-top:20px; text-align:center; background: var(--card-alt); border-radius: 12px; padding: 10px;">
+        <img id="viewer-img" style="max-width:100%; max-height:50vh; border-radius:8px; object-fit:contain;">
+      </div>
+      <div style="display:flex; gap:8px; margin-top:20px;">
+        <button class="btn" style="flex:1;" onclick="copyViewerPhoto()"><span style="font-size:1.1rem; vertical-align:middle; margin-right:4px;">📋</span> Copy</button>
+        <button class="btn" style="flex:1;" onclick="downloadViewerPhoto()"><span style="font-size:1.1rem; vertical-align:middle; margin-right:4px;">📥</span> Save</button>
+      </div>
     </div>
   </div>
 </div>
@@ -541,7 +561,9 @@
   let activeHistoryFilter = 'all';
   let activeDiaryIdx = null;
   let pendingClickedDate = null;
-  let activePhotosBase64 = []; // Supports Multiple Photos
+  let activePhotosBase64 = []; 
+  let activeViewerBase64 = null;
+  let editingMainLogIdx = -1; // Duplication prevention pointer
   let currYear = new Date().getFullYear();
   let currMonth = new Date().getMonth();
 
@@ -560,23 +582,32 @@
     renderPhotoGrid(gridId);
   }
 
-  async function copyPhoto(idx) {
+  function openPhotoViewer(b64) {
+    activeViewerBase64 = b64;
+    document.getElementById('viewer-img').src = b64;
+    document.getElementById('photo-viewer-modal').classList.add('active');
+  }
+
+  function closePhotoViewer() {
+    document.getElementById('photo-viewer-modal').classList.remove('active');
+    activeViewerBase64 = null;
+  }
+
+  async function copyViewerPhoto() {
     try {
-      const b64 = activePhotosBase64[idx];
-      const res = await fetch(b64);
+      const res = await fetch(activeViewerBase64);
       const blob = await res.blob();
       await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
       alert('Photo copied to clipboard! 📋');
     } catch (e) {
-      alert('Your browser does not support copying images directly. Try downloading it instead.');
+      alert('Your browser does not support copying images directly. Try saving it instead.');
     }
   }
 
-  function downloadPhoto(idx) {
-    const b64 = activePhotosBase64[idx];
+  function downloadViewerPhoto() {
     const a = document.createElement('a');
-    a.href = b64;
-    a.download = `ojt_photo_${new Date().toISOString().slice(0,10)}_${idx}.jpg`;
+    a.href = activeViewerBase64;
+    a.download = `ojt_photo_${new Date().getTime()}.jpg`;
     a.click();
   }
 
@@ -584,12 +615,8 @@
     const grid = document.getElementById(gridId);
     grid.innerHTML = activePhotosBase64.map((b64, i) => `
       <div class="photo-item">
-        <img src="${b64}" class="photo-thumb">
-        <div class="photo-actions">
-          <button class="photo-act-btn" type="button" onclick="copyPhoto(${i})" title="Copy">📋</button>
-          <button class="photo-act-btn" type="button" onclick="downloadPhoto(${i})" title="Download">⬇️</button>
-          <button class="photo-act-btn del" type="button" onclick="removePhoto(${i}, '${gridId}')" title="Remove">✕</button>
-        </div>
+        <img src="${b64}" class="photo-thumb" onclick="openPhotoViewer('${b64}')">
+        <button class="photo-del-btn" type="button" onclick="removePhoto(${i}, '${gridId}')">✕</button>
       </div>
     `).join('');
   }
@@ -601,7 +628,7 @@
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const maxDim = 600; // Compressed for storage
+          const maxDim = 800; // Good balance of quality vs storage
           let width = img.width, height = img.height;
           if (width > height && width > maxDim) { height = Math.round((height * maxDim) / width); width = maxDim; } 
           else if (height > maxDim) { width = Math.round((width * maxDim) / height); height = maxDim; }
@@ -615,6 +642,43 @@
       reader.readAsDataURL(file);
     });
   }
+
+  /* MAIN FORM DUPLICATE PREVENTION */
+  function checkDateForDuplicate() {
+    const dateVal = document.getElementById('inp-date').value;
+    if(!dateVal) return;
+    const parts = dateVal.split('-');
+    const dateStr = new Date(parts[0], parts[1] - 1, parts[2]).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    
+    editingMainLogIdx = logs.findIndex(l => l.date === dateStr);
+    const btn = document.getElementById('btn-main-log');
+    
+    if(editingMainLogIdx !== -1) {
+      const l = logs[editingMainLogIdx];
+      document.getElementById('inp-h').value = Math.floor(l.mins / 60);
+      document.getElementById('inp-m').value = l.mins % 60;
+      document.getElementById('inp-note').value = l.desc;
+      document.getElementById('inp-diary-direct').innerHTML = l.diaryDraft || l.diary || '';
+      activePhotosBase64 = l.photos ? [...l.photos] : (l.photo ? [l.photo] : []);
+      renderPhotoGrid('inp-photo-grid');
+
+      btn.innerText = "✎ Update Existing Log";
+      btn.style.backgroundColor = "var(--yellow)";
+      btn.style.color = "#111";
+    } else {
+      btn.innerText = "+ Log Worked Hours";
+      btn.style.backgroundColor = "var(--accent)";
+      btn.style.color = "var(--bg)";
+    }
+  }
+
+  /* AUTOMATIC BACKGROUND SYNC LOGIC */
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && currentUser) {
+      document.getElementById('cloud-sync-status').innerText = 'Checking for updates...';
+      pullFromCloud();
+    }
+  });
 
   /* AUTHENTICATION */
   async function initAuth() {
@@ -645,11 +709,21 @@
     try {
       const { data } = await sb.from('user_ojt_data').select('data').eq('user_id', currentUser.id).single();
       if (data && data.data) {
-        if (data.data.logs && data.data.logs.length >= logs.length) { logs = data.data.logs; localStorage.setItem('ojt_logs', JSON.stringify(logs)); }
-        if (data.data.settings) { settings = data.data.settings; localStorage.setItem('ojt_settings', JSON.stringify(settings)); document.body.setAttribute('data-theme', settings.theme || 'slate');}
-        updateUI();
+        let didUpdate = false;
+        if (data.data.logs && data.data.logs.length !== logs.length) { 
+          logs = data.data.logs; localStorage.setItem('ojt_logs', JSON.stringify(logs)); didUpdate = true;
+        }
+        if (data.data.settings) { 
+          settings = data.data.settings; localStorage.setItem('ojt_settings', JSON.stringify(settings)); 
+          document.body.setAttribute('data-theme', settings.theme || 'slate');
+          didUpdate = true;
+        }
+        if(didUpdate) updateUI();
+        document.getElementById('cloud-sync-status').innerText = `Synced ✓ (${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})})`;
       }
-    } catch (e) {}
+    } catch (e) {
+      document.getElementById('cloud-sync-status').innerText = 'Sync failed';
+    }
   }
   async function syncWithCloud() {
     if (!sb || !currentUser) return handleAuthClick();
@@ -674,7 +748,10 @@
     document.getElementById(`tab-${name}`).classList.add('active');
     if (name === 'calendar') renderCalendar();
     if (name === 'settings') loadSettingsForm();
-    if (name === 'log') { activePhotosBase64 = []; renderPhotoGrid('inp-photo-grid'); }
+    if (name === 'log') { 
+      // check form state cleanly when opening tab
+      checkDateForDuplicate();
+    }
   }
 
   function renderPresets() {
@@ -697,24 +774,39 @@
     const chosenDate = new Date(parts[0], parts[1] - 1, parts[2]);
     const dateStr = chosenDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
 
-    // Prevent Duplicates
-    if (logs.some(l => l.date === dateStr)) {
-      if (!confirm(`⚠️ You already have an entry for ${dateStr}.\n\nAre you sure you want to add a duplicate entry for this exact day?`)) return;
-    }
+    const newMins = ((parseInt(document.getElementById('inp-h').value) || 0) * 60) + (parseInt(document.getElementById('inp-m').value) || 0);
+    const newDesc = document.getElementById('inp-note').value.trim() || 'Daily Shift';
+    const newCategory = settings.multiMode ? document.getElementById('inp-category').value : 'p1';
+    const newDiary = document.getElementById('inp-diary-direct').innerHTML.trim();
 
-    logs.push({ 
-      mins: ((parseInt(document.getElementById('inp-h').value) || 0) * 60) + (parseInt(document.getElementById('inp-m').value) || 0), 
-      desc: document.getElementById('inp-note').value.trim() || 'Daily Shift', 
-      category: settings.multiMode ? document.getElementById('inp-category').value : 'p1',
-      date: dateStr, exactTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      diary: document.getElementById('inp-diary-direct').innerHTML.trim(),
-      photos: [...activePhotosBase64],
-      rawDate: chosenDate.toISOString()
-    });
+    if (editingMainLogIdx !== -1) {
+      // Overwrite existing log
+      logs[editingMainLogIdx].mins = newMins;
+      logs[editingMainLogIdx].desc = newDesc;
+      logs[editingMainLogIdx].category = newCategory;
+      logs[editingMainLogIdx].diary = newDiary;
+      logs[editingMainLogIdx].photos = [...activePhotosBase64];
+      delete logs[editingMainLogIdx].diaryDraft;
+    } else {
+      // Push new log
+      logs.push({ 
+        mins: newMins, 
+        desc: newDesc, 
+        category: newCategory,
+        date: dateStr, 
+        exactTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        diary: newDiary,
+        photos: [...activePhotosBase64],
+        rawDate: chosenDate.toISOString()
+      });
+    }
     
+    // Clear the form after saving
     document.getElementById('inp-diary-direct').innerHTML = '';
     activePhotosBase64 = []; renderPhotoGrid('inp-photo-grid');
-    saveData(); switchTab('tracker');
+    saveData(); 
+    checkDateForDuplicate(); // Reset button to default state if date changed
+    switchTab('tracker');
   }
 
   function saveData() { localStorage.setItem('ojt_logs', JSON.stringify(logs)); updateUI(); if (currentUser) syncWithCloud(); }
@@ -802,9 +894,9 @@
   function renderCalendar() {
     document.getElementById('cal-month-title').innerText = new Date(currYear, currMonth, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     const grid = document.getElementById('cal-grid');
-    grid.innerHTML = ['M','T','W','T','F','S','S'].map(n => `<div class="cal-day-name">${n}</div>`).join('');
+    grid.innerHTML = ['S','M','T','W','T','F','S'].map(n => `<div class="cal-day-name">${n}</div>`).join('');
     
-    let firstDay = (new Date(currYear, currMonth, 1).getDay() + 6) % 7;
+    let firstDay = new Date(currYear, currMonth, 1).getDay();
     let daysInMonth = new Date(currYear, currMonth + 1, 0).getDate();
     const dayMap = {};
 
@@ -863,7 +955,6 @@
     document.getElementById('edit-h').value = Math.floor(l.mins / 60); document.getElementById('edit-m').value = l.mins % 60; document.getElementById('edit-note').value = l.desc;
     document.getElementById('diary-textarea').innerHTML = l.diaryDraft || l.diary || '';
     
-    // Support legacy singular photo + array of photos
     activePhotosBase64 = l.photos ? [...l.photos] : (l.photo ? [l.photo] : []);
     renderPhotoGrid('edit-photo-grid');
     
@@ -955,7 +1046,7 @@
     saveData(); closeBatchModal(); alert(`Generated ${c} entries!`); switchTab('tracker');
   }
 
-  updateUI(); window.onload = () => initAuth();
+  updateUI(); window.onload = () => { initAuth(); checkDateForDuplicate(); };
 </script>
 </body>
 </html>
