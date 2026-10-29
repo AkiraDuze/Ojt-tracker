@@ -343,7 +343,7 @@
     </div>
   </div>
 
-  <!-- SETTINGS TAB (REORGANIZED) -->
+  <!-- SETTINGS TAB -->
   <div id="tab-settings" class="tab-content">
     
     <!-- 1. Cloud Sync -->
@@ -362,7 +362,17 @@
       </div>
     </div>
 
-    <!-- 2. Appearance -->
+    <!-- 2. Export Data -->
+    <div class="card settings-card">
+      <h4>💾 Export Data</h4>
+      <p style="font-size:0.68rem; color:var(--text-muted); margin-bottom:10px;">Download your logs and images for backup or offline logbook submission.</p>
+      <div style="display:flex; gap:8px;">
+        <button class="btn" style="flex:1; font-size: 0.75rem;" onclick="exportJSON()">📦 Backup (JSON)</button>
+        <button class="btn" style="flex:1; font-size: 0.75rem; background: var(--accent); color: var(--bg); border: none;" onclick="exportHTML()">🖨️ Printable (HTML)</button>
+      </div>
+    </div>
+
+    <!-- 3. Appearance -->
     <div class="card settings-card">
       <h4>🎨 Appearance</h4>
       <div class="input-group">
@@ -375,7 +385,7 @@
       </div>
     </div>
 
-    <!-- 3. Tracker Rules -->
+    <!-- 4. Tracker Rules -->
     <div class="card settings-card">
       <h4>🎯 Tracker Rules</h4>
       <div class="toggle-row">
@@ -403,7 +413,7 @@
       </div>
     </div>
 
-    <!-- 4. Schedule -->
+    <!-- 5. Schedule -->
     <div class="card settings-card">
       <h4>📅 Standard Schedule</h4>
       <p style="font-size:0.65rem; color:var(--text-muted); margin-bottom:8px;">Used to predict completion dates.</p>
@@ -423,7 +433,7 @@
       </div>
     </div>
 
-    <!-- 5. Categories -->
+    <!-- 6. Categories -->
     <div class="card settings-card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <h4 style="margin:0; border:none;">⚡ Custom Categories</h4>
@@ -566,6 +576,77 @@
   let editingMainLogIdx = -1; // Duplication prevention pointer
   let currYear = new Date().getFullYear();
   let currMonth = new Date().getMonth();
+
+  /* EXPORT & BACKUP LOGIC */
+  function exportJSON() {
+    const blob = new Blob([JSON.stringify(logs, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ojt_backup_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportHTML() {
+    let html = `<!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>OJT Logbook</title>
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; max-width: 800px; margin: auto; color: #333; }
+        h1 { text-align: center; border-bottom: 2px solid #2dd4bf; padding-bottom: 10px; color: #111827; }
+        .log-entry { border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 20px; page-break-inside: avoid; }
+        .log-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 10px; }
+        .log-date { font-size: 1.2rem; font-weight: bold; color: #111827; }
+        .log-duration { background: #2dd4bf; color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; }
+        .log-desc { font-size: 1rem; color: #4b5563; margin-bottom: 10px; font-weight: bold;}
+        .log-diary { font-size: 0.95rem; color: #374151; line-height: 1.6; }
+        .photo-grid { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        .photo-grid img { width: 150px; height: 150px; object-fit: cover; border-radius: 8px; border: 1px solid #ccc; }
+      </style>
+    </head>
+    <body>
+      <h1>OJT Logbook Export</h1>`;
+
+    const sortedLogs = [...logs].sort((a, b) => new Date(a.rawDate) - new Date(b.rawDate));
+    
+    sortedLogs.forEach(l => {
+      let diaryContent = l.diary || l.diaryDraft || '<i>No detailed notes provided.</i>';
+      let categoryName = l.category === 'p2' ? settings.nameP2 : settings.nameP1;
+      
+      html += `
+        <div class="log-entry">
+          <div class="log-header">
+            <div class="log-date">${l.date}</div>
+            <div class="log-duration">${Math.floor(l.mins/60)}h ${l.mins%60}m</div>
+          </div>
+          <div class="log-desc">Category: ${categoryName} | Note: ${l.desc}</div>
+          <div class="log-diary">
+            <strong>Tasks Completed:</strong><br>
+            ${diaryContent}
+          </div>`;
+          
+      if (l.photos && l.photos.length > 0) {
+        html += `<div class="photo-grid">`;
+        l.photos.forEach(p => { html += `<img src="${p}">`; });
+        html += `</div>`;
+      }
+      
+      html += `</div>`;
+    });
+    
+    html += `</body></html>`;
+    
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ojt_logbook_${new Date().toISOString().slice(0,10)}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   /* MULTIPLE PHOTOS & DOWNLOAD LOGIC */
   async function handleMultiplePhotos(inputElem, gridId) {
